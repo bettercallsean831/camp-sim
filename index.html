@@ -446,21 +446,41 @@
             saveState(); render();
         }
 
-        function renderAdminProfessions() {
+function renderAdminProfessions() {
             const container = document.getElementById("admin-profession-container");
             container.innerHTML = "";
             Object.keys(state.professions).forEach(pName => {
+                // 這裡新增了表頭標記
+                let headerHtml = `<div class="grid grid-cols-12 gap-1 text-[10px] font-bold text-slate-500 bg-slate-200 p-1.5 rounded mb-1 text-center items-center">
+                    <div class="col-span-3 text-left">卡片名稱</div>
+                    <div class="col-span-1">權重</div>
+                    <div class="col-span-4 text-left">結果敘述</div>
+                    <div class="col-span-1">⚡精力</div>
+                    <div class="col-span-1">🧠心態</div>
+                    <div class="col-span-1">💰金幣</div>
+                    <div class="col-span-1">操作</div>
+                </div>`;
                 let cardsHtml = state.professions[pName].map((c, i) => `
-                    <div class="grid grid-cols-12 gap-1 text-[10px] items-center border-b py-1">
-                        <div class="col-span-3"><input value="${c.name}" onchange="state.professions['${pName}'][${i}].name=this.value;saveState()" class="border w-full"></div>
-                        <div class="col-span-1"><input value="${c.weight}" type="number" onchange="state.professions['${pName}'][${i}].weight=parseInt(this.value);saveState()" class="border w-full"></div>
-                        <div class="col-span-4"><input value="${c.text}" onchange="state.professions['${pName}'][${i}].text=this.value;saveState()" class="border w-full"></div>
-                        <div class="col-span-1"><input value="${c.e}" type="number" onchange="state.professions['${pName}'][${i}].e=parseInt(this.value);saveState()" class="border w-full"></div>
-                        <div class="col-span-1"><input value="${c.m}" type="number" onchange="state.professions['${pName}'][${i}].m=parseInt(this.value);saveState()" class="border w-full"></div>
-                        <div class="col-span-1"><input value="${c.c}" type="number" onchange="state.professions['${pName}'][${i}].c=parseInt(this.value);saveState()" class="border w-full"></div>
-                        <div class="col-span-1"><button onclick="state.professions['${pName}'].splice(${i},1);saveState();render()" class="text-red-500">刪</button></div>
+                    <div class="grid grid-cols-12 gap-1 text-[10px] items-center border-b py-1 hover:bg-slate-50 transition">
+                        <div class="col-span-3"><input value="${c.name}" onchange="state.professions['${pName}'][${i}].name=this.value;saveState()" class="border w-full p-1 rounded" placeholder="名稱"></div>
+                        <div class="col-span-1"><input value="${c.weight}" type="number" onchange="state.professions['${pName}'][${i}].weight=parseInt(this.value);saveState()" class="border w-full p-1 rounded text-center"></div>
+                        <div class="col-span-4"><input value="${c.text}" onchange="state.professions['${pName}'][${i}].text=this.value;saveState()" class="border w-full p-1 rounded" placeholder="彈出視窗敘述"></div>
+                        <div class="col-span-1"><input value="${c.e}" type="number" onchange="state.professions['${pName}'][${i}].e=parseInt(this.value);saveState()" class="border w-full p-1 rounded text-center text-emerald-600 font-bold"></div>
+                        <div class="col-span-1"><input value="${c.m}" type="number" onchange="state.professions['${pName}'][${i}].m=parseInt(this.value);saveState()" class="border w-full p-1 rounded text-center text-emerald-600 font-bold"></div>
+                        <div class="col-span-1"><input value="${c.c}" type="number" onchange="state.professions['${pName}'][${i}].c=parseInt(this.value);saveState()" class="border w-full p-1 rounded text-center text-emerald-600 font-bold"></div>
+                        <div class="col-span-1 text-center"><button onclick="state.professions['${pName}'].splice(${i},1);saveState();render()" class="text-rose-500 hover:text-rose-700 font-bold">刪除</button></div>
                     </div>`).join('');
-                container.innerHTML += `<div class="border p-2 bg-white rounded"><div class="flex justify-between font-bold mb-2"><span>${pName}</span><div><button onclick="state.professions['${pName}'].push({name:'新事件',weight:10,text:'描述',e:0,m:0,c:0});saveState();render()" class="bg-indigo-500 text-white px-2 rounded">+卡片</button> <button onclick="delete state.professions['${pName}'];saveState();render()" class="bg-red-500 text-white px-2 rounded">刪除職業</button></div></div>${cardsHtml}</div>`;
+                container.innerHTML += `<div class="border p-3 bg-white rounded-lg shadow-sm mb-3">
+                    <div class="flex justify-between font-bold mb-3 items-center">
+                        <span class="text-indigo-800 text-sm">🛠️ 職業池：${pName}</span>
+                        <div>
+                            <button onclick="state.professions['${pName}'].push({name:'新事件',weight:10,text:'描述',e:0,m:0,c:0});saveState();render()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-2 py-1.5 rounded text-xs transition">+ 新增卡片</button> 
+                            <button onclick="delete state.professions['${pName}'];saveState();render()" class="bg-rose-500 hover:bg-rose-600 text-white px-2 py-1.5 rounded text-xs transition ml-1">刪除職業</button>
+                        </div>
+                    </div>
+                    ${headerHtml}
+                    ${cardsHtml || '<div class="text-center py-2 text-slate-400 text-xs">目前無卡片，請點擊上方新增</div>'}
+                </div>`;
             });
         }
 
@@ -472,16 +492,29 @@
         function renderAdminTradeRules() {
             const container = document.getElementById("admin-trade-rules-list");
             container.innerHTML = "";
+            // 這裡新增了交易規則的表頭，並用紅綠色區分消耗與獲得
+            let headerHtml = `<div class="grid grid-cols-12 gap-1 text-[10px] font-bold text-slate-500 bg-slate-200 p-1.5 rounded mb-2 text-center items-center">
+                <div class="col-span-5 text-left">按鈕顯示說明文字</div>
+                <div class="col-span-1 text-rose-600">➖代幣</div>
+                <div class="col-span-1 text-rose-600">➖金幣</div>
+                <div class="col-span-1 text-emerald-600">➕精力</div>
+                <div class="col-span-1 text-emerald-600">➕心態</div>
+                <div class="col-span-1 text-emerald-600">➕金幣</div>
+                <div class="col-span-2">操作</div>
+            </div>`;
+            let rulesHtml = "";
             state.config.tradeRules.forEach((r, i) => {
-                container.innerHTML += `<div class="grid grid-cols-12 gap-1 text-[10px] items-center border-b py-1">
-                    <div class="col-span-5"><input value="${r.text}" onchange="state.config.tradeRules[${i}].text=this.value;saveState();renderTradePhase()" class="border w-full"></div>
-                    <div class="col-span-1"><input value="${r.token}" type="number" onchange="state.config.tradeRules[${i}].token=parseInt(this.value);saveState()" class="border w-full text-center"></div>
-                    <div class="col-span-1"><input value="${r.coin}" type="number" onchange="state.config.tradeRules[${i}].coin=parseInt(this.value);saveState()" class="border w-full text-center"></div>
-                    <div class="col-span-1"><input value="${r.e}" type="number" onchange="state.config.tradeRules[${i}].e=parseInt(this.value);saveState()" class="border w-full text-center"></div>
-                    <div class="col-span-1"><input value="${r.m}" type="number" onchange="state.config.tradeRules[${i}].m=parseInt(this.value);saveState()" class="border w-full text-center"></div>
-                    <div class="col-span-1"><input value="${r.c}" type="number" onchange="state.config.tradeRules[${i}].c=parseInt(this.value);saveState()" class="border w-full text-center"></div>
-                    <div class="col-span-2 text-center"><button onclick="state.config.tradeRules.splice(${i},1);saveState();render()" class="text-red-500">刪除</button></div></div>`;
+                rulesHtml += `<div class="grid grid-cols-12 gap-1 text-[10px] items-center border-b py-1 hover:bg-slate-50 transition">
+                    <div class="col-span-5"><input value="${r.text}" onchange="state.config.tradeRules[${i}].text=this.value;saveState();renderTradePhase()" class="border w-full p-1 rounded" placeholder="例: 消耗1代幣換2精力"></div>
+                    <div class="col-span-1"><input value="${r.token}" type="number" onchange="state.config.tradeRules[${i}].token=parseInt(this.value);saveState()" class="border w-full p-1 rounded text-center text-rose-600 font-bold"></div>
+                    <div class="col-span-1"><input value="${r.coin}" type="number" onchange="state.config.tradeRules[${i}].coin=parseInt(this.value);saveState()" class="border w-full p-1 rounded text-center text-rose-600 font-bold"></div>
+                    <div class="col-span-1"><input value="${r.e}" type="number" onchange="state.config.tradeRules[${i}].e=parseInt(this.value);saveState()" class="border w-full p-1 rounded text-center text-emerald-600 font-bold"></div>
+                    <div class="col-span-1"><input value="${r.m}" type="number" onchange="state.config.tradeRules[${i}].m=parseInt(this.value);saveState()" class="border w-full p-1 rounded text-center text-emerald-600 font-bold"></div>
+                    <div class="col-span-1"><input value="${r.c}" type="number" onchange="state.config.tradeRules[${i}].c=parseInt(this.value);saveState()" class="border w-full p-1 rounded text-center text-emerald-600 font-bold"></div>
+                    <div class="col-span-2 text-center"><button onclick="state.config.tradeRules.splice(${i},1);saveState();render()" class="text-rose-500 hover:text-rose-700 font-bold">刪除規則</button></div>
+                </div>`;
             });
+            container.innerHTML = headerHtml + (rulesHtml || '<div class="text-center py-2 text-slate-400 text-xs">目前無交易規則</div>');
         }
 
         function addNewTradeRule() {
