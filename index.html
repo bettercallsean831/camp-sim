@@ -34,11 +34,15 @@
         <section class="lg:col-span-8 bg-slate-200/50 rounded-2xl shadow-inner border border-slate-300 p-4 flex flex-col h-full overflow-hidden relative">
             <div class="flex justify-between items-end mb-4 border-b border-slate-300 pb-4">
                 <div>
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-widest bg-white px-2 py-1 rounded shadow-sm">當前進度 (手動控制)</span>
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-widest bg-white px-2 py-1 rounded shadow-sm">當前進度與動作控制</span>
                     <div class="flex items-center space-x-3 mt-1">
-                        <button onclick="changeRound(-1)" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition">⬅️ 上一步</button>
-                        <h2 id="big-timer-display" class="text-3xl font-black text-slate-900">Round 1：第一年 上半年</h2>
-                        <button onclick="changeRound(1)" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition">下一步 ➡️</button>
+                        <button id="btn-undo" onclick="undo()" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition flex items-center">
+                            <span class="mr-1">↩️</span> 復原
+                        </button>
+                        <button id="btn-redo" onclick="redo()" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition flex items-center">
+                            重做 <span class="ml-1">↪️</span>
+                        </button>
+                        <h2 id="big-timer-display" class="text-2xl font-black text-slate-900 ml-3">Round 1：第一年 上半年</h2>
                     </div>
                 </div>
                 <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex items-center space-x-4">
@@ -60,7 +64,7 @@
                     🎲 全組集體命運抽卡
                 </button>
                 <button onclick="advanceRound()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-6 py-3 rounded-xl shadow transition text-sm">
-                    ✅ 結算並推進回合
+                    ✅ 結算並推進回合 ➡️
                 </button>
             </div>
         </section>
@@ -73,7 +77,7 @@
 
             <div class="flex-1 overflow-y-auto custom-scrollbar p-4">
                 <div id="tab-play" class="space-y-4">
-                    <div class="bg-indigo-50 border border-indigo-200 p-3 rounded-lg text-xs text-indigo-800 font-medium">💡 如果點錯技能，可點擊「撤銷還原」退回消耗的資源。</div>
+                    <div class="bg-indigo-50 border border-indigo-200 p-3 rounded-lg text-xs text-indigo-800 font-medium">💡 隨時可以使用左上角的「↩️ 復原」按鈕來取消按錯的操作。</div>
                     <div id="action-team-list" class="space-y-3"></div>
                 </div>
 
@@ -82,31 +86,31 @@
                         <summary class="bg-slate-200/70 p-3 font-bold text-sm text-slate-700 hover:bg-slate-200">1. 全域回合與計時器</summary>
                         <div class="p-4 space-y-3">
                             <label class="block text-xs font-bold text-slate-600">6 回合全域顯示名稱 (逗號隔開)</label>
-                            <input type="text" id="cfg-rounds" class="w-full border rounded p-1.5 text-xs font-mono" onchange="updateConfig()">
+                            <input type="text" id="cfg-rounds" class="w-full border rounded p-1.5 text-xs font-mono" onchange="commit(); updateConfig()">
                             <label class="block text-xs font-bold text-slate-600 mt-2">倒數計時器 (秒)</label>
-                            <input type="number" id="cfg-timer" class="w-full border rounded p-1.5 text-xs" onchange="updateConfig()">
+                            <input type="number" id="cfg-timer" class="w-full border rounded p-1.5 text-xs" onchange="commit(); updateConfig()">
                         </div>
                     </details>
 
                     <details class="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
                         <summary class="bg-slate-200/70 p-3 font-bold text-sm text-slate-700 hover:bg-slate-200">2. 結局稱號系統</summary>
-                        <div class="p-4"><div id="admin-titles-list" class="space-y-2"></div><button onclick="addNewTitle()" class="w-full mt-2 bg-indigo-100 text-indigo-700 text-xs font-bold py-1.5 rounded">+ 新增規則</button></div>
+                        <div class="p-4"><div id="admin-titles-list" class="space-y-2"></div><button onclick="commit(); addNewTitle()" class="w-full mt-2 bg-indigo-100 text-indigo-700 text-xs font-bold py-1.5 rounded">+ 新增規則</button></div>
                     </details>
 
                     <details class="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
                         <summary class="bg-slate-200/70 p-3 font-bold text-sm text-slate-700 hover:bg-slate-200">3. 隊伍分配</summary>
-                        <div class="p-4"><div id="admin-team-list" class="space-y-2"></div><button onclick="addNewTeam()" class="w-full mt-3 bg-indigo-100 text-indigo-700 text-xs font-bold py-1.5 rounded">+ 新增隊伍</button></div>
+                        <div class="p-4"><div id="admin-team-list" class="space-y-2"></div><button onclick="commit(); addNewTeam()" class="w-full mt-3 bg-indigo-100 text-indigo-700 text-xs font-bold py-1.5 rounded">+ 新增隊伍</button></div>
                     </details>
 
                     <details class="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden" open>
                         <summary class="bg-slate-200/70 p-3 font-bold text-sm text-slate-700 hover:bg-slate-200">4. 主動抉擇技能設定</summary>
-                        <div class="p-4"><div id="admin-action-list" class="space-y-3"></div><button onclick="addNewAction()" class="w-full mt-3 bg-indigo-100 text-indigo-700 text-xs font-bold py-1.5 rounded">+ 新增技能</button></div>
+                        <div class="p-4"><div id="admin-action-list" class="space-y-3"></div><button onclick="commit(); addNewAction()" class="w-full mt-3 bg-indigo-100 text-indigo-700 text-xs font-bold py-1.5 rounded">+ 新增技能</button></div>
                     </details>
 
                     <details class="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden" open>
                         <summary class="bg-slate-200/70 p-3 font-bold text-sm text-slate-700 hover:bg-slate-200">5. 職業專屬卡池編輯</summary>
                         <div class="p-4 space-y-4">
-                            <div class="flex space-x-2"><input type="text" id="new-profession-name" placeholder="新職業名稱" class="flex-1 border rounded px-2 py-1 text-xs"><button onclick="addNewProfession()" class="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded">建立職業</button></div>
+                            <div class="flex space-x-2"><input type="text" id="new-profession-name" placeholder="新職業名稱" class="flex-1 border rounded px-2 py-1 text-xs"><button onclick="commit(); addNewProfession()" class="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded">建立職業</button></div>
                             <div id="admin-prof-list" class="space-y-4 border-t pt-4"></div>
                         </div>
                     </details>
@@ -165,8 +169,31 @@
         };
 
         let state = {};
+        let pastStates = [];
+        let futureStates = [];
         let timerInterval = null;
         let timeLeft = 0;
+
+        // 全局狀態快照 (Undo/Redo 核心)
+        window.commit = function() {
+            pastStates.push(JSON.stringify(state));
+            if(pastStates.length > 50) pastStates.shift(); // 最多存50步
+            futureStates = [];
+        };
+
+        window.undo = function() {
+            if(pastStates.length === 0) return;
+            futureStates.push(JSON.stringify(state));
+            state = JSON.parse(pastStates.pop());
+            saveState(); syncAdmin(); renderAll();
+        };
+
+        window.redo = function() {
+            if(futureStates.length === 0) return;
+            pastStates.push(JSON.stringify(state));
+            state = JSON.parse(futureStates.pop());
+            saveState(); syncAdmin(); renderAll();
+        };
 
         const timer = {
             start: () => {
@@ -180,7 +207,9 @@
 
         function init() {
             try { state = JSON.parse(localStorage.getItem("camp_sim_v3")) || JSON.parse(JSON.stringify(DEFAULT_STATE)); } catch(e) { state = JSON.parse(JSON.stringify(DEFAULT_STATE)); }
-            // 確保資料結構相容升級
+            try { pastStates = JSON.parse(localStorage.getItem("camp_sim_past")) || []; } catch(e) { pastStates = []; }
+            try { futureStates = JSON.parse(localStorage.getItem("camp_sim_future")) || []; } catch(e) { futureStates = []; }
+            
             Object.values(state.professions).forEach(p => { 
                 if(!p.pools || p.pools.length !== 6) p.pools = Array(6).fill().map(()=>[]); 
                 if(!p.roundNames || p.roundNames.length !== 6) p.roundNames = [...state.config.rounds];
@@ -188,8 +217,17 @@
             timeLeft = state.config.timer; saveState(); syncAdmin(); renderAll();
         }
 
-        function saveState() { localStorage.setItem("camp_sim_v3", JSON.stringify(state)); }
-        function resetToDefaultState() { if(confirm("確定重置嗎？")) { localStorage.removeItem("camp_sim_v3"); location.reload(); } }
+        function saveState() { 
+            localStorage.setItem("camp_sim_v3", JSON.stringify(state)); 
+            localStorage.setItem("camp_sim_past", JSON.stringify(pastStates)); 
+            localStorage.setItem("camp_sim_future", JSON.stringify(futureStates)); 
+        }
+
+        function resetToDefaultState() { 
+            if(confirm("確定重置嗎？所有進度將會消失！")) { 
+                localStorage.removeItem("camp_sim_v3"); localStorage.removeItem("camp_sim_past"); localStorage.removeItem("camp_sim_future"); location.reload(); 
+            } 
+        }
 
         window.switchTab = function(tab) {
             document.getElementById('tab-play').classList.toggle('hidden', tab !== 'play');
@@ -199,6 +237,14 @@
         };
 
         function renderAll() {
+            // 控制 Undo/Redo 按鈕狀態
+            const bUndo = document.getElementById('btn-undo');
+            const bRedo = document.getElementById('btn-redo');
+            if(pastStates.length === 0) { bUndo.classList.add('opacity-50', 'cursor-not-allowed', 'bg-slate-100'); bUndo.classList.remove('bg-white', 'hover:bg-slate-100'); } 
+            else { bUndo.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-slate-100'); bUndo.classList.add('bg-white', 'hover:bg-slate-100'); }
+            if(futureStates.length === 0) { bRedo.classList.add('opacity-50', 'cursor-not-allowed', 'bg-slate-100'); bRedo.classList.remove('bg-white', 'hover:bg-slate-100'); } 
+            else { bRedo.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-slate-100'); bRedo.classList.add('bg-white', 'hover:bg-slate-100'); }
+
             if(state.currentRound > 6) return showEnding();
             document.getElementById('big-timer-display').innerText = state.config.rounds[state.currentRound - 1] || `Round ${state.currentRound}`;
             timer.updateStr(); renderLeaderboard(); renderActionTab();
@@ -230,11 +276,14 @@
                     const ok = canAct && t.tokens>=a.tCost && t.coin>=a.cCost && t.energy>=a.eCost && t.mind>=a.mCost;
                     return `<button onclick="executeAction(${i}, '${a.id}')" ${ok?'':'disabled'} class="text-[10px] font-bold p-1.5 border rounded ${ok?'bg-white hover:bg-slate-100 text-slate-700':'bg-slate-100 opacity-50 cursor-not-allowed'}">${a.name} (-${a.tCost}🎟️)</button>`;
                 }).join('');
-                return `<div class="border p-2 rounded-xl bg-slate-50 ${isHosp?'opacity-50 grayscale':''}"><div class="flex justify-between items-center mb-2"><span class="font-bold text-sm">${t.name}</span><span class="text-xs font-bold text-indigo-600">${t.tokens} 🎟️</span></div><div class="grid grid-cols-2 gap-1">${isHosp ? '<span class="text-xs text-rose-500 font-bold col-span-2">🏥 住院休養中</span>' : t.actionUsed ? `<div class="col-span-2 flex justify-between items-center bg-slate-200 p-1.5 rounded"><span class="text-xs text-slate-500 font-bold">✓ 已行動</span><button onclick="undoAction(${i})" class="bg-rose-100 hover:bg-rose-200 text-rose-600 px-2 py-1 rounded text-[10px] font-bold">撤銷還原</button></div>` : btns}</div></div>`;
+                return `<div class="border p-2 rounded-xl bg-slate-50 ${isHosp?'opacity-50 grayscale':''}"><div class="flex justify-between items-center mb-2"><span class="font-bold text-sm">${t.name}</span><span class="text-xs font-bold text-indigo-600">${t.tokens} 🎟️</span></div><div class="grid grid-cols-2 gap-1">${isHosp ? '<span class="text-xs text-rose-500 font-bold col-span-2">🏥 住院休養中</span>' : t.actionUsed ? `<div class="col-span-2 flex justify-between items-center bg-slate-200 p-1.5 rounded"><span class="text-xs text-slate-500 font-bold">✓ 已行動</span><button onclick="undoAction(${i})" class="bg-rose-100 hover:bg-rose-200 text-rose-600 px-2 py-1 rounded text-[10px] font-bold">快速撤銷技能</button></div>` : btns}</div></div>`;
             }).join('');
         }
 
-        window.tweak = function(idx, f, a) { state.teams[idx][f] += a; checkHospital(state.teams[idx]); saveState(); renderAll(); };
+        window.tweak = function(idx, f, a) { 
+            commit(); 
+            state.teams[idx][f] += a; checkHospital(state.teams[idx]); saveState(); renderAll(); 
+        };
 
         window.executeBatchDraw = function() {
             if(state.currentRound > 6) return;
@@ -258,6 +307,7 @@
         };
 
         window.closeBatchModal = function() {
+            commit();
             state.batchResults.forEach(r => {
                 if(!r.skipped && r.card) {
                     let t = state.teams[r.teamIdx];
@@ -269,6 +319,7 @@
         };
 
         window.executeAction = function(i, aId) {
+            commit();
             let t = state.teams[i], a = state.config.actions.find(x => x.id === aId);
             if(!a || t.actionUsed) return;
             t.tokens -= a.tCost; t.coin -= a.cCost; t.energy -= a.eCost; t.mind -= a.mCost;
@@ -277,6 +328,7 @@
         };
 
         window.undoAction = function(i) {
+            commit();
             let t = state.teams[i];
             if(!t.actionUsed) return;
             if(t.lastAction) {
@@ -292,18 +344,13 @@
         function checkHospital(t) {
             if (t.status === 'normal' && (t.energy <= 0 || t.mind <= 0)) {
                 t.status = 'hospitalized_new'; t.energy = Math.max(0, t.energy); t.mind = Math.max(0, t.mind);
-                alert(`🚨 警告！【${t.name}】精/心歸零送醫！`);
+                alert(`🚨 警告！【${t.name}】精/心歸零送醫！下一回合將被鎖定。`);
             }
         }
 
-        window.changeRound = function(delta) {
-            state.currentRound += delta;
-            if(state.currentRound < 1) state.currentRound = 1;
-            saveState(); renderAll();
-        };
-
         window.advanceRound = function() {
             if(!confirm(`確定要結算並進入下一回嗎？`)) return;
+            commit();
             state.teams.forEach(t => {
                 if (t.status === 'hospitalized_new') t.status = 'hospitalized_skipping';
                 else if (t.status === 'hospitalized_skipping') {
@@ -331,25 +378,24 @@
         window.syncAdmin = function() {
             document.getElementById('cfg-rounds').value = state.config.rounds.join(',');
             document.getElementById('cfg-timer').value = state.config.timer;
-            document.getElementById('admin-titles-list').innerHTML = state.config.titles.map((r,i) => `<div class="flex space-x-1 text-[9px] mb-1"><input value="${r.name}" onchange="state.config.titles[${i}].name=this.value;saveState()" class="border p-1 w-1/4"><input value="${r.minC||''}" placeholder="C>=" onchange="state.config.titles[${i}].minC=parseInt(this.value)||null;saveState()" class="border p-1 w-1/8"><input value="${r.maxE||''}" placeholder="E<=" onchange="state.config.titles[${i}].maxE=parseInt(this.value)||null;saveState()" class="border p-1 w-1/8"><button onclick="state.config.titles.splice(${i},1);saveState();syncAdmin()" class="text-rose-500 px-1">刪</button></div>`).join('');
-            document.getElementById('admin-team-list').innerHTML = state.teams.map((t,i) => `<div class="flex space-x-1 mb-1 text-xs"><input value="${t.name}" onchange="state.teams[${i}].name=this.value;saveState();renderAll()" class="border p-1 flex-1"><select onchange="state.teams[${i}].profession=this.value;saveState();renderAll()" class="border p-1 flex-1">${Object.keys(state.professions).map(p=>`<option ${t.profession===p?'selected':''}>${p}</option>`).join('')}</select><button onclick="state.teams.splice(${i},1);saveState();syncAdmin();renderAll()" class="text-rose-500">刪</button></div>`).join('');
+            document.getElementById('admin-titles-list').innerHTML = state.config.titles.map((r,i) => `<div class="flex space-x-1 text-[9px] mb-1"><input value="${r.name}" onchange="commit(); state.config.titles[${i}].name=this.value;saveState()" class="border p-1 w-1/4"><input value="${r.minC||''}" placeholder="C>=" onchange="commit(); state.config.titles[${i}].minC=parseInt(this.value)||null;saveState()" class="border p-1 w-1/8"><input value="${r.maxE||''}" placeholder="E<=" onchange="commit(); state.config.titles[${i}].maxE=parseInt(this.value)||null;saveState()" class="border p-1 w-1/8"><button onclick="commit(); state.config.titles.splice(${i},1);saveState();syncAdmin()" class="text-rose-500 px-1">刪</button></div>`).join('');
+            document.getElementById('admin-team-list').innerHTML = state.teams.map((t,i) => `<div class="flex space-x-1 mb-1 text-xs"><input value="${t.name}" onchange="commit(); state.teams[${i}].name=this.value;saveState();renderAll()" class="border p-1 flex-1"><select onchange="commit(); state.teams[${i}].profession=this.value;saveState();renderAll()" class="border p-1 flex-1">${Object.keys(state.professions).map(p=>`<option ${t.profession===p?'selected':''}>${p}</option>`).join('')}</select><button onclick="commit(); state.teams.splice(${i},1);saveState();syncAdmin();renderAll()" class="text-rose-500">刪</button></div>`).join('');
             
             document.getElementById('admin-action-list').innerHTML = state.config.actions.map((a,i) => `
                 <div class="bg-white border rounded-xl p-3 text-xs mb-3 shadow-sm">
-                    <div class="flex justify-between items-center mb-2 border-b pb-2"><input value="${a.name}" onchange="state.config.actions[${i}].name=this.value;saveState();renderActionTab()" class="border p-1 w-2/3 font-bold text-indigo-700 rounded" placeholder="技能名稱"><button onclick="state.config.actions.splice(${i},1);saveState();syncAdmin();renderActionTab()" class="bg-rose-100 text-rose-600 px-2 py-1 rounded font-bold">刪除</button></div>
-                    <div class="grid grid-cols-2 gap-2"><div class="bg-rose-50 p-2 rounded"><div class="font-bold text-[10px] text-rose-700 mb-1 text-center border-b border-rose-200 pb-1">⚠️ 點擊消耗 (Cost)</div><div class="grid grid-cols-4 gap-1 text-[10px] text-center"><div>🎟️<input value="${a.tCost}" type="number" onchange="state.config.actions[${i}].tCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div><div>🪙<input value="${a.cCost}" type="number" onchange="state.config.actions[${i}].cCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div><div>🔋<input value="${a.eCost}" type="number" onchange="state.config.actions[${i}].eCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div><div>❤️<input value="${a.mCost}" type="number" onchange="state.config.actions[${i}].mCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div></div></div><div class="bg-emerald-50 p-2 rounded"><div class="font-bold text-[10px] text-emerald-700 mb-1 text-center border-b border-emerald-200 pb-1">🎁 執行獲得 (Gain)</div><div class="grid grid-cols-4 gap-1 text-[10px] text-center"><div>🎟️<input value="${a.tGain}" type="number" onchange="state.config.actions[${i}].tGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div><div>🪙<input value="${a.cGain}" type="number" onchange="state.config.actions[${i}].cGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div><div>🔋<input value="${a.eGain}" type="number" onchange="state.config.actions[${i}].eGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div><div>❤️<input value="${a.mGain}" type="number" onchange="state.config.actions[${i}].mGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div></div></div></div></div>
+                    <div class="flex justify-between items-center mb-2 border-b pb-2"><input value="${a.name}" onchange="commit(); state.config.actions[${i}].name=this.value;saveState();renderActionTab()" class="border p-1 w-2/3 font-bold text-indigo-700 rounded" placeholder="技能名稱"><button onclick="commit(); state.config.actions.splice(${i},1);saveState();syncAdmin();renderActionTab()" class="bg-rose-100 text-rose-600 px-2 py-1 rounded font-bold">刪除</button></div>
+                    <div class="grid grid-cols-2 gap-2"><div class="bg-rose-50 p-2 rounded"><div class="font-bold text-[10px] text-rose-700 mb-1 text-center border-b border-rose-200 pb-1">⚠️ 點擊消耗 (Cost)</div><div class="grid grid-cols-4 gap-1 text-[10px] text-center"><div>🎟️<input value="${a.tCost}" type="number" onchange="commit(); state.config.actions[${i}].tCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div><div>🪙<input value="${a.cCost}" type="number" onchange="commit(); state.config.actions[${i}].cCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div><div>🔋<input value="${a.eCost}" type="number" onchange="commit(); state.config.actions[${i}].eCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div><div>❤️<input value="${a.mCost}" type="number" onchange="commit(); state.config.actions[${i}].mCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div></div></div><div class="bg-emerald-50 p-2 rounded"><div class="font-bold text-[10px] text-emerald-700 mb-1 text-center border-b border-emerald-200 pb-1">🎁 執行獲得 (Gain)</div><div class="grid grid-cols-4 gap-1 text-[10px] text-center"><div>🎟️<input value="${a.tGain}" type="number" onchange="commit(); state.config.actions[${i}].tGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div><div>🪙<input value="${a.cGain}" type="number" onchange="commit(); state.config.actions[${i}].cGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div><div>🔋<input value="${a.eGain}" type="number" onchange="commit(); state.config.actions[${i}].eGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div><div>❤️<input value="${a.mGain}" type="number" onchange="commit(); state.config.actions[${i}].mGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div></div></div></div></div>
             `).join('');
             renderAdminProfessions();
         };
 
-        window.updateConfig = function() { state.config.rounds = document.getElementById('cfg-rounds').value.split(','); state.config.timer = parseInt(document.getElementById('cfg-timer').value)||180; saveState(); renderAll(); };
-        window.addNewTitle = function() { state.config.titles.push({name:"新稱號", minC:null,maxC:null,minE:null,maxE:null,minM:null,maxM:null}); saveState(); syncAdmin(); };
-        window.addNewTeam = function() { state.teams.push({id:"t_"+Date.now(), name:"新隊伍", profession:Object.keys(state.professions)[0], energy:10, mind:10, coin:0, tokens:2, status:'normal', actionUsed:false}); saveState(); syncAdmin(); renderAll(); };
-        window.addNewAction = function() { state.config.actions.push({id:"a_"+Date.now(), name:"新技能", tCost:1, cCost:0, eCost:0, mCost:0, tGain:0, cGain:0, eGain:0, mGain:0}); saveState(); syncAdmin(); };
-        window.addNewProfession = function() { let n=document.getElementById("new-profession-name").value; if(n&&!state.professions[n]){state.professions[n]={roundNames:[...state.config.rounds], pools:Array(6).fill().map(()=>[])};document.getElementById("new-profession-name").value="";saveState();syncAdmin();} };
+        window.updateConfig = function() { commit(); state.config.rounds = document.getElementById('cfg-rounds').value.split(','); state.config.timer = parseInt(document.getElementById('cfg-timer').value)||180; saveState(); renderAll(); };
+        window.addNewTitle = function() { commit(); state.config.titles.push({name:"新稱號", minC:null,maxC:null,minE:null,maxE:null,minM:null,maxM:null}); saveState(); syncAdmin(); };
+        window.addNewTeam = function() { commit(); state.teams.push({id:"t_"+Date.now(), name:"新隊伍", profession:Object.keys(state.professions)[0], energy:10, mind:10, coin:0, tokens:2, status:'normal', actionUsed:false}); saveState(); syncAdmin(); renderAll(); };
+        window.addNewAction = function() { commit(); state.config.actions.push({id:"a_"+Date.now(), name:"新技能", tCost:1, cCost:0, eCost:0, mCost:0, tGain:0, cGain:0, eGain:0, mGain:0}); saveState(); syncAdmin(); };
+        window.addNewProfession = function() { let n=document.getElementById("new-profession-name").value; if(n&&!state.professions[n]){ commit(); state.professions[n]={roundNames:[...state.config.rounds], pools:Array(6).fill().map(()=>[])};document.getElementById("new-profession-name").value="";saveState();syncAdmin();} };
         
         window.renderAdminProfessions = function() {
-            // 防折疊機制：記錄當前打開的面版
             const profOpen = {}; const roundOpen = {};
             document.querySelectorAll('.prof-details').forEach(el => profOpen[el.dataset.id] = el.open);
             document.querySelectorAll('.round-details').forEach(el => roundOpen[el.dataset.id] = el.open);
@@ -358,7 +404,7 @@
                 <details class="prof-details border-2 border-indigo-100 rounded-xl bg-indigo-50/30 mb-2 overflow-hidden" data-id="${pName}" ${profOpen[pName]?'open':''}>
                     <summary class="flex justify-between font-black text-indigo-900 p-3 bg-indigo-100/50 cursor-pointer hover:bg-indigo-200/50 transition">
                         <span>💼 職業：${pName}</span>
-                        <button onclick="event.preventDefault(); if(confirm('確定刪除此職業？')) { delete state.professions['${pName}']; saveState(); syncAdmin(); }" class="text-rose-600 text-xs bg-white border px-2 py-1 rounded shadow-sm hover:bg-rose-50">刪除職業</button>
+                        <button onclick="event.preventDefault(); if(confirm('確定刪除此職業？')) { commit(); delete state.professions['${pName}']; saveState(); syncAdmin(); }" class="text-rose-600 text-xs bg-white border px-2 py-1 rounded shadow-sm hover:bg-rose-50">刪除職業</button>
                     </summary>
                     <div class="p-3 space-y-3">
                         ${state.professions[pName].pools.map((pool, rIdx) => `
@@ -366,26 +412,24 @@
                                 <summary class="text-xs font-bold bg-slate-100 p-2 cursor-pointer hover:bg-slate-200 flex justify-between items-center transition">
                                     <div class="flex items-center space-x-2 w-1/2">
                                         <span class="text-slate-400">📌 R${rIdx+1} </span>
-                                        <input value="${state.professions[pName].roundNames[rIdx]}" onchange="state.professions['${pName}'].roundNames[${rIdx}]=this.value;saveState()" onclick="event.stopPropagation()" class="border-b border-slate-300 bg-transparent px-1 flex-1 focus:bg-white font-bold text-indigo-700" placeholder="自訂名稱">
+                                        <input value="${state.professions[pName].roundNames[rIdx]}" onchange="commit(); state.professions['${pName}'].roundNames[${rIdx}]=this.value;saveState()" onclick="event.stopPropagation()" class="border-b border-slate-300 bg-transparent px-1 flex-1 focus:bg-white font-bold text-indigo-700" placeholder="自訂名稱">
                                     </div>
                                     <div class="flex items-center space-x-2">
                                         <span class="text-slate-500">(${pool.length}張)</span>
-                                        <button onclick="event.preventDefault(); state.professions['${pName}'].pools[${rIdx}].push({name:'新卡',w:10,text:'',e:0,m:0,c:0}); saveState(); syncAdmin();" class="text-indigo-600 bg-indigo-50 px-2 py-1 rounded shadow-sm">+ 新增卡片</button>
+                                        <button onclick="event.preventDefault(); commit(); state.professions['${pName}'].pools[${rIdx}].push({name:'新卡',w:10,text:'',e:0,m:0,c:0}); saveState(); syncAdmin();" class="text-indigo-600 bg-indigo-50 px-2 py-1 rounded shadow-sm">+ 新增卡片</button>
                                     </div>
                                 </summary>
                                 <div class="p-2 space-y-2">
-                                    <div class="grid grid-cols-12 gap-1 text-[10px] font-bold text-slate-500 bg-slate-50 p-1 text-center rounded">
-                                        <div class="col-span-2 text-left">卡名</div><div class="col-span-1">權重</div><div class="col-span-3 text-left">事件敘述</div><div class="col-span-1">🔋</div><div class="col-span-1">❤️</div><div class="col-span-1">🪙</div><div class="col-span-3">操作</div>
-                                    </div>
+                                    <div class="grid grid-cols-12 gap-1 text-[10px] font-bold text-slate-500 bg-slate-50 p-1 text-center rounded"><div class="col-span-2 text-left">卡名</div><div class="col-span-1">權重</div><div class="col-span-3 text-left">事件敘述</div><div class="col-span-1">🔋</div><div class="col-span-1">❤️</div><div class="col-span-1">🪙</div><div class="col-span-3">操作</div></div>
                                     ${pool.map((c, i) => `
                                         <div class="grid grid-cols-12 gap-1 text-[10px] items-center border-b pb-1">
-                                            <div class="col-span-2"><input value="${c.name||''}" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].name=this.value;saveState()" class="border w-full p-1 rounded" placeholder="卡名"></div>
-                                            <div class="col-span-1"><input value="${c.w}" type="number" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].w=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center"></div>
-                                            <div class="col-span-3"><input value="${c.text||''}" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].text=this.value;saveState()" class="border w-full p-1 rounded" placeholder="敘述"></div>
-                                            <div class="col-span-1 text-emerald-600"><input value="${c.e}" type="number" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].e=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div>
-                                            <div class="col-span-1 text-rose-600"><input value="${c.m}" type="number" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].m=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div>
-                                            <div class="col-span-1 text-amber-600"><input value="${c.c}" type="number" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].c=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div>
-                                            <div class="col-span-3 text-center flex justify-center space-x-1"><button onclick="state.professions['${pName}'].pools[${rIdx}].splice(${i},1);saveState();syncAdmin()" class="bg-rose-100 text-rose-600 px-2 py-1 rounded font-bold text-[9px]">刪除</button></div>
+                                            <div class="col-span-2"><input value="${c.name||''}" onchange="commit(); state.professions['${pName}'].pools[${rIdx}][${i}].name=this.value;saveState()" class="border w-full p-1 rounded" placeholder="卡名"></div>
+                                            <div class="col-span-1"><input value="${c.w}" type="number" onchange="commit(); state.professions['${pName}'].pools[${rIdx}][${i}].w=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center"></div>
+                                            <div class="col-span-3"><input value="${c.text||''}" onchange="commit(); state.professions['${pName}'].pools[${rIdx}][${i}].text=this.value;saveState()" class="border w-full p-1 rounded" placeholder="敘述"></div>
+                                            <div class="col-span-1 text-emerald-600"><input value="${c.e}" type="number" onchange="commit(); state.professions['${pName}'].pools[${rIdx}][${i}].e=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div>
+                                            <div class="col-span-1 text-rose-600"><input value="${c.m}" type="number" onchange="commit(); state.professions['${pName}'].pools[${rIdx}][${i}].m=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div>
+                                            <div class="col-span-1 text-amber-600"><input value="${c.c}" type="number" onchange="commit(); state.professions['${pName}'].pools[${rIdx}][${i}].c=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div>
+                                            <div class="col-span-3 text-center flex justify-center space-x-1"><button onclick="commit(); state.professions['${pName}'].pools[${rIdx}].splice(${i},1);saveState();syncAdmin()" class="bg-rose-100 text-rose-600 px-2 py-1 rounded font-bold text-[9px]">刪除</button></div>
                                         </div>
                                     `).join('')}
                                 </div>
