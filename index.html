@@ -19,7 +19,6 @@
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 antialiased flex flex-col">
 
-    <!-- 頂部導航 -->
     <header class="bg-slate-900 text-white px-6 py-4 shadow-md flex justify-between items-center z-10">
         <div class="flex items-center space-x-3">
             <span class="text-2xl">⏳</span>
@@ -32,7 +31,6 @@
 
     <main class="flex-1 max-w-[1800px] w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-80px)] overflow-hidden">
         
-        <!-- 左側：主看板 -->
         <section class="lg:col-span-8 bg-slate-200/50 rounded-2xl shadow-inner border border-slate-300 p-4 flex flex-col h-full overflow-hidden relative">
             <div class="flex justify-between items-end mb-4 border-b border-slate-300 pb-4">
                 <div>
@@ -63,7 +61,6 @@
             </div>
         </section>
 
-        <!-- 右側：設定與操作區 -->
         <section class="lg:col-span-4 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full overflow-hidden">
             <div class="flex space-x-1 p-2 bg-slate-100 border-b border-slate-200">
                 <button id="tab-play-btn" onclick="switchTab('play')" class="flex-1 py-2 rounded font-bold text-sm bg-white shadow text-indigo-700 transition">🎮 手動操作區</button>
@@ -77,7 +74,7 @@
                 </div>
 
                 <div id="tab-admin" class="hidden space-y-4">
-                    <details class="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden" open>
+                    <details class="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
                         <summary class="bg-slate-200/70 p-3 font-bold text-sm text-slate-700 hover:bg-slate-200">1. 回合與基本設定</summary>
                         <div class="p-4 space-y-3">
                             <label class="block text-xs font-bold text-slate-600">6 回合自訂名稱 (逗號隔開)</label>
@@ -97,15 +94,15 @@
                         <div class="p-4"><div id="admin-team-list" class="space-y-2"></div><button onclick="addNewTeam()" class="w-full mt-3 bg-indigo-100 text-indigo-700 text-xs font-bold py-1.5 rounded">+ 新增隊伍</button></div>
                     </details>
 
-                    <details class="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
+                    <details class="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden" open>
                         <summary class="bg-slate-200/70 p-3 font-bold text-sm text-slate-700 hover:bg-slate-200">4. 主動抉擇技能設定</summary>
                         <div class="p-4"><div id="admin-action-list" class="space-y-3"></div><button onclick="addNewAction()" class="w-full mt-3 bg-indigo-100 text-indigo-700 text-xs font-bold py-1.5 rounded">+ 新增技能</button></div>
                     </details>
 
-                    <details class="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
+                    <details class="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden" open>
                         <summary class="bg-slate-200/70 p-3 font-bold text-sm text-slate-700 hover:bg-slate-200">5. 職業卡池編輯</summary>
                         <div class="p-4 space-y-4">
-                            <div class="flex space-x-2"><input type="text" id="new-profession-name" placeholder="新職業" class="flex-1 border rounded px-2 py-1 text-xs"><button onclick="addNewProfession()" class="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded">建立職業</button></div>
+                            <div class="flex space-x-2"><input type="text" id="new-profession-name" placeholder="新職業名稱" class="flex-1 border rounded px-2 py-1 text-xs"><button onclick="addNewProfession()" class="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded">建立職業</button></div>
                             <div id="admin-prof-list" class="space-y-4 border-t pt-4"></div>
                         </div>
                     </details>
@@ -120,12 +117,11 @@
         </section>
     </main>
 
-    <!-- Modal 視窗 -->
     <div id="batch-modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-2xl w-full max-w-5xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <div class="bg-slate-900 p-4 text-white text-center relative"><h3 class="text-2xl font-black text-amber-400">🔮 命運結算報告</h3><p class="text-xs text-slate-400 mt-1" id="batch-modal-round"></p></div>
             <div id="batch-results-grid" class="flex-1 overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 custom-scrollbar bg-slate-100"></div>
-            <div class="bg-white p-4 border-t flex justify-center"><button onclick="closeBatchModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-10 py-3 rounded-xl w-full md:w-auto">確認所有結果並套用數值</button></div>
+            <div class="bg-white p-4 border-t flex justify-center"><button onclick="closeBatchModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-10 py-3 rounded-xl w-full md:w-auto">確認套用數值</button></div>
         </div>
     </div>
 
@@ -197,7 +193,7 @@
         function renderAll() {
             if(state.currentRound > 6) return showEnding();
             document.getElementById('big-timer-display').innerText = state.config.rounds[state.currentRound - 1] || `Round ${state.currentRound}`;
-            timer.updateStr(); renderLeaderboard(); renderActionTab(); renderAdminProfessions();
+            timer.updateStr(); renderLeaderboard(); renderActionTab();
         }
 
         function renderLeaderboard() {
@@ -230,7 +226,7 @@
             }).join('');
         }
 
-        function tweak(idx, f, a) { state.teams[idx][f] += a; checkHospital(state.teams[idx]); saveState(); renderAll(); }
+        window.tweak = function(idx, f, a) { state.teams[idx][f] += a; checkHospital(state.teams[idx]); saveState(); renderAll(); };
 
         window.executeBatchDraw = function() {
             if(state.currentRound > 6) return;
@@ -308,17 +304,91 @@
             document.getElementById('cfg-timer').value = state.config.timer;
             document.getElementById('admin-titles-list').innerHTML = state.config.titles.map((r,i) => `<div class="flex space-x-1 text-[9px] mb-1"><input value="${r.name}" onchange="state.config.titles[${i}].name=this.value;saveState()" class="border p-1 w-1/4"><input value="${r.minC||''}" placeholder="C>=" onchange="state.config.titles[${i}].minC=parseInt(this.value)||null;saveState()" class="border p-1 w-1/8"><input value="${r.maxE||''}" placeholder="E<=" onchange="state.config.titles[${i}].maxE=parseInt(this.value)||null;saveState()" class="border p-1 w-1/8"><button onclick="state.config.titles.splice(${i},1);saveState();syncAdmin()" class="text-rose-500 px-1">刪</button></div>`).join('');
             document.getElementById('admin-team-list').innerHTML = state.teams.map((t,i) => `<div class="flex space-x-1 mb-1 text-xs"><input value="${t.name}" onchange="state.teams[${i}].name=this.value;saveState();renderAll()" class="border p-1 flex-1"><select onchange="state.teams[${i}].profession=this.value;saveState();renderAll()" class="border p-1 flex-1">${Object.keys(state.professions).map(p=>`<option ${t.profession===p?'selected':''}>${p}</option>`).join('')}</select><button onclick="state.teams.splice(${i},1);saveState();syncAdmin();renderAll()" class="text-rose-500">刪</button></div>`).join('');
-            document.getElementById('admin-action-list').innerHTML = state.config.actions.map((a,i) => `<div class="bg-white border rounded p-2 text-[9px] mb-2"><input value="${a.name}" onchange="state.config.actions[${i}].name=this.value;saveState();renderActionTab()" class="border p-1 w-full mb-1"><div class="flex justify-between">消耗:🎟️<input value="${a.tCost}" type="number" onchange="state.config.actions[${i}].tCost=parseInt(this.value)||0;saveState()" class="w-8 border">獲得:🪙<input value="${a.cGain}" type="number" onchange="state.config.actions[${i}].cGain=parseInt(this.value)||0;saveState()" class="w-8 border"><button onclick="state.config.actions.splice(${i},1);saveState();syncAdmin();renderActionTab()" class="text-rose-500">刪</button></div></div>`).join('');
+            
+            // 全新渲染的主動抉擇技能設定 UI
+            document.getElementById('admin-action-list').innerHTML = state.config.actions.map((a,i) => `
+                <div class="bg-white border rounded-xl p-3 text-xs mb-3 shadow-sm">
+                    <div class="flex justify-between items-center mb-2 border-b pb-2">
+                        <input value="${a.name}" onchange="state.config.actions[${i}].name=this.value;saveState();renderActionTab()" class="border p-1 w-2/3 font-bold text-indigo-700 rounded" placeholder="技能名稱">
+                        <button onclick="state.config.actions.splice(${i},1);saveState();syncAdmin();renderActionTab()" class="bg-rose-100 hover:bg-rose-200 text-rose-600 px-2 py-1 rounded font-bold">刪除</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-rose-50 p-2 rounded">
+                            <div class="font-bold text-[10px] text-rose-700 mb-1 text-center border-b border-rose-200 pb-1">⚠️ 點擊消耗 (Cost)</div>
+                            <div class="grid grid-cols-4 gap-1 text-[10px] text-center">
+                                <div>🎟️<input value="${a.tCost}" type="number" onchange="state.config.actions[${i}].tCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div>
+                                <div>🪙<input value="${a.cCost}" type="number" onchange="state.config.actions[${i}].cCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div>
+                                <div>🔋<input value="${a.eCost}" type="number" onchange="state.config.actions[${i}].eCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div>
+                                <div>❤️<input value="${a.mCost}" type="number" onchange="state.config.actions[${i}].mCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div>
+                            </div>
+                        </div>
+                        <div class="bg-emerald-50 p-2 rounded">
+                            <div class="font-bold text-[10px] text-emerald-700 mb-1 text-center border-b border-emerald-200 pb-1">🎁 執行獲得 (Gain)</div>
+                            <div class="grid grid-cols-4 gap-1 text-[10px] text-center">
+                                <div>🎟️<input value="${a.tGain}" type="number" onchange="state.config.actions[${i}].tGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div>
+                                <div>🪙<input value="${a.cGain}" type="number" onchange="state.config.actions[${i}].cGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div>
+                                <div>🔋<input value="${a.eGain}" type="number" onchange="state.config.actions[${i}].eGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div>
+                                <div>❤️<input value="${a.mGain}" type="number" onchange="state.config.actions[${i}].mGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            renderAdminProfessions();
         };
 
         window.updateConfig = function() { state.config.rounds = document.getElementById('cfg-rounds').value.split(','); state.config.timer = parseInt(document.getElementById('cfg-timer').value)||180; saveState(); renderAll(); };
         window.addNewTitle = function() { state.config.titles.push({name:"新稱號", minC:null,maxC:null,minE:null,maxE:null,minM:null,maxM:null}); saveState(); syncAdmin(); };
         window.addNewTeam = function() { state.teams.push({id:"t_"+Date.now(), name:"新隊伍", profession:Object.keys(state.professions)[0], energy:10, mind:10, coin:0, tokens:2, status:'normal', actionUsed:false}); saveState(); syncAdmin(); renderAll(); };
-        window.addNewAction = function() { state.config.actions.push({id:"a_"+Date.now(), name:"新技能", tCost:1, cCost:0, eCost:0, mCost:0, tGain:0, cGain:0, eGain:0, mGain:0}); saveState(); syncAdmin(); renderActionTab(); };
-        window.addNewProfession = function() { let n=document.getElementById("new-profession-name").value; if(n&&!state.professions[n]){state.professions[n]={pools:Array(6).fill().map(()=>[])};document.getElementById("new-profession-name").value="";saveState();syncAdmin();renderAdminProfessions();} };
+        window.addNewAction = function() { state.config.actions.push({id:"a_"+Date.now(), name:"新技能", tCost:1, cCost:0, eCost:0, mCost:0, tGain:0, cGain:0, eGain:0, mGain:0}); saveState(); syncAdmin(); };
+        window.addNewProfession = function() { let n=document.getElementById("new-profession-name").value; if(n&&!state.professions[n]){state.professions[n]={pools:Array(6).fill().map(()=>[])};document.getElementById("new-profession-name").value="";saveState();syncAdmin();} };
         
+        // 全新渲染的雙層折疊職業卡池 UI
         window.renderAdminProfessions = function() {
-            document.getElementById('admin-prof-list').innerHTML = Object.keys(state.professions).map(pName => `<div class="border-2 border-indigo-100 rounded-xl p-2 bg-indigo-50/30 mb-2"><div class="flex justify-between font-black text-indigo-900 mb-2"><span>${pName}</span><button onclick="delete state.professions['${pName}'];saveState();syncAdmin();renderAdminProfessions()" class="text-rose-600 text-xs">刪除</button></div>${state.professions[pName].pools.map((pool, rIdx) => `<div class="bg-white p-1 mb-1 border rounded"><div class="text-xs font-bold bg-slate-100 p-1 mb-1 flex justify-between">回合 ${rIdx+1} <button onclick="state.professions['${pName}'].pools[${rIdx}].push({w:10,e:0,m:0,c:0});saveState();renderAdminProfessions()" class="text-indigo-600">+ 卡</button></div>${pool.map((c, i) => `<div class="flex space-x-1 text-[9px] mb-1"><input value="${c.name||''}" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].name=this.value;saveState()" class="border w-1/3 placeholder-black" placeholder="卡名"><input value="${c.text||''}" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].text=this.value;saveState()" class="border w-1/3 placeholder-black" placeholder="敘述"><button onclick="state.professions['${pName}'].pools[${rIdx}].splice(${i},1);saveState();renderAdminProfessions()" class="text-rose-500">刪</button></div>`).join('')}</div>`).join('')}</div>`).join('');
+            document.getElementById('admin-prof-list').innerHTML = Object.keys(state.professions).map(pName => `
+                <details class="border-2 border-indigo-100 rounded-xl bg-indigo-50/30 mb-2 overflow-hidden">
+                    <summary class="flex justify-between font-black text-indigo-900 p-3 bg-indigo-100/50 cursor-pointer hover:bg-indigo-200/50 transition">
+                        <span>💼 職業：${pName}</span>
+                        <button onclick="event.preventDefault(); if(confirm('確定刪除此職業？')) { delete state.professions['${pName}']; saveState(); syncAdmin(); }" class="text-rose-600 text-xs bg-white border px-2 py-1 rounded shadow-sm hover:bg-rose-50">刪除職業</button>
+                    </summary>
+                    <div class="p-3 space-y-3">
+                        ${state.professions[pName].pools.map((pool, rIdx) => `
+                            <details class="bg-white border rounded shadow-sm overflow-hidden">
+                                <summary class="text-xs font-bold bg-slate-100 p-2 cursor-pointer hover:bg-slate-200 flex justify-between items-center transition">
+                                    <span>📌 ${state.config.rounds[rIdx] || `回合 ${rIdx+1}`} 卡池 (${pool.length}張)</span>
+                                    <button onclick="event.preventDefault(); state.professions['${pName}'].pools[${rIdx}].push({name:'新卡',w:10,text:'',e:0,m:0,c:0}); saveState(); syncAdmin();" class="text-indigo-600 bg-indigo-50 px-2 py-1 rounded shadow-sm">+ 新增卡片</button>
+                                </summary>
+                                <div class="p-2 space-y-2">
+                                    <div class="grid grid-cols-12 gap-1 text-[10px] font-bold text-slate-500 bg-slate-50 p-1 text-center rounded">
+                                        <div class="col-span-2 text-left">卡名</div>
+                                        <div class="col-span-1">權重</div>
+                                        <div class="col-span-3 text-left">事件敘述</div>
+                                        <div class="col-span-1">🔋</div>
+                                        <div class="col-span-1">❤️</div>
+                                        <div class="col-span-1">🪙</div>
+                                        <div class="col-span-3">操作</div>
+                                    </div>
+                                    ${pool.length === 0 ? '<div class="text-center text-[10px] py-2 text-slate-400">尚無卡片，點擊右上方新增</div>' : ''}
+                                    ${pool.map((c, i) => `
+                                        <div class="grid grid-cols-12 gap-1 text-[10px] items-center border-b pb-1">
+                                            <div class="col-span-2"><input value="${c.name||''}" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].name=this.value;saveState()" class="border w-full p-1 rounded placeholder-slate-400" placeholder="卡名"></div>
+                                            <div class="col-span-1"><input value="${c.w}" type="number" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].w=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center"></div>
+                                            <div class="col-span-3"><input value="${c.text||''}" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].text=this.value;saveState()" class="border w-full p-1 rounded placeholder-slate-400" placeholder="敘述"></div>
+                                            <div class="col-span-1 text-emerald-600"><input value="${c.e}" type="number" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].e=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div>
+                                            <div class="col-span-1 text-rose-600"><input value="${c.m}" type="number" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].m=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div>
+                                            <div class="col-span-1 text-amber-600"><input value="${c.c}" type="number" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].c=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div>
+                                            <div class="col-span-3 text-center flex justify-center space-x-1">
+                                                <button onclick="state.professions['${pName}'].pools[${rIdx}].splice(${i},1);saveState();syncAdmin()" class="bg-rose-100 hover:bg-rose-200 text-rose-600 px-2 py-1 rounded font-bold transition text-[9px]">刪除</button>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </details>
+                        `).join('')}
+                    </div>
+                </details>
+            `).join('');
         };
 
         window.exportData = function() { let a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state)); a.download = "camp.json"; a.click(); };
