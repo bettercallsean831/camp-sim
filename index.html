@@ -4,31 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>兒童職業體驗營 - 季度經營與卡牌策略管理系統</title>
-    <!-- 引入 Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
+        body { font-family: 'Noto Sans TC', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 antialiased">
 
-    <!-- 全域頂部導航欄 -->
     <header class="bg-indigo-600 text-white px-6 py-4 shadow-md flex justify-between items-center">
         <div class="flex items-center space-x-3">
             <span class="text-2xl">🎯</span>
@@ -44,10 +31,8 @@
         </div>
     </header>
 
-    <!-- 主畫面佈局 -->
     <main class="max-w-[1600px] mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <!-- 左側欄：隊伍記分板 (占 4/12 寬度) -->
         <section class="lg:col-span-4 bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-col h-[calc(100vh-120px)] min-h-[600px]">
             <div class="border-b border-slate-100 pb-3 mb-4 flex justify-between items-center">
                 <h2 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
@@ -55,33 +40,17 @@
                 </h2>
                 <span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">老師可手動微調數值</span>
             </div>
-            
-            <!-- 隊伍列表捲動區 -->
-            <div id="scoreboard-list" class="flex-1 overflow-y-auto pr-1 space-y-4 custom-scrollbar">
-                <!-- 隊伍卡片將由 JavaScript 動態渲染 -->
-            </div>
+            <div id="scoreboard-list" class="flex-1 overflow-y-auto pr-1 space-y-4 custom-scrollbar"></div>
         </section>
 
-        <!-- 右側欄：主控制台與後台設定 (占 8/12 寬度) -->
         <section class="lg:col-span-8 flex flex-col h-[calc(100vh-120px)] min-h-[600px]">
-            
-            <!-- 頁籤切換按鈕 -->
             <div class="flex space-x-2 mb-4 bg-slate-200 p-1.5 rounded-xl self-start shadow-inner">
-                <button id="tab-play-btn" onclick="switchTab('play')" class="px-5 py-2 rounded-lg font-bold text-sm transition-all shadow-sm bg-white text-indigo-700">
-                    🎮 前台遊玩看板
-                </button>
-                <button id="tab-trade-btn" onclick="switchTab('trade')" class="px-5 py-2 rounded-lg font-bold text-sm transition-all text-slate-600 hover:text-slate-900">
-                    🪙 季末代幣交易
-                </button>
-                <button id="tab-admin-btn" onclick="switchTab('admin')" class="px-5 py-2 rounded-lg font-bold text-sm transition-all text-slate-600 hover:text-slate-900 flex items-center space-x-1">
-                    <span>⚙️</span> <span>老師後台設定</span>
-                </button>
+                <button id="tab-play-btn" onclick="switchTab('play')" class="px-5 py-2 rounded-lg font-bold text-sm transition-all shadow-sm bg-white text-indigo-700">🎮 前台遊玩看板</button>
+                <button id="tab-trade-btn" onclick="switchTab('trade')" class="px-5 py-2 rounded-lg font-bold text-sm transition-all text-slate-600 hover:text-slate-900">🪙 季末代幣交易</button>
+                <button id="tab-admin-btn" onclick="switchTab('admin')" class="px-5 py-2 rounded-lg font-bold text-sm transition-all text-slate-600 hover:text-slate-900 flex items-center space-x-1"><span>⚙️</span> <span>老師後台設定</span></button>
             </div>
 
-            <!-- 頁籤內容主體 -->
             <div class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 overflow-y-auto custom-scrollbar">
-                
-                <!-- 頁籤 1：前台遊玩看板 -->
                 <div id="tab-play" class="space-y-6">
                     <div class="bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl p-5 text-white shadow-sm relative overflow-hidden">
                         <div class="relative z-10">
@@ -89,19 +58,11 @@
                             <div id="big-timer-display" class="text-3xl font-black mt-2">第 1 年 - 春季</div>
                             <p class="text-white/80 text-sm mt-1">請引導各組輪流進行本季度的決策與抽卡事件！</p>
                         </div>
-                        <span class="absolute right-4 bottom-[-20px] text-9xl opacity-10 select-none">📅</span>
                     </div>
-
                     <div>
-                        <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center space-x-1">
-                            <span>🚀</span> <span>本季抽卡進度</span>
-                        </h3>
-                        <div id="play-team-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- 動態生成各隊抽卡按鈕 -->
-                        </div>
+                        <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center space-x-1"><span>🚀</span> <span>本季抽卡進度</span></h3>
+                        <div id="play-team-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                     </div>
-                    
-                    <!-- 推進季度控制區 -->
                     <div id="season-advance-box" class="border-t border-slate-100 pt-5 flex justify-between items-center bg-slate-50 p-4 rounded-xl">
                         <div>
                             <h4 class="font-bold text-slate-800 text-sm">季度推進控制</h4>
@@ -113,25 +74,15 @@
                     </div>
                 </div>
 
-                <!-- 頁籤 2：季末代幣交易 -->
                 <div id="tab-trade" class="hidden space-y-6">
                     <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-800 flex items-start space-x-3">
                         <span class="text-lg">💡</span>
-                        <div>
-                            <span class="font-bold">季末代幣結算階段：</span>
-                            每個小組在每一季結束後，可自由決定是否消耗「行動代幣」來進行資源換取。請老師依據學生的實體討論決策，在下方點擊按鈕執行兌換。
-                        </div>
+                        <div><span class="font-bold">季末代幣結算階段：</span>老師依據學生的實體討論決策，在下方點擊按鈕執行兌換。</div>
                     </div>
-
                     <div class="space-y-4">
-                        <h3 class="font-bold text-slate-800 text-md flex items-center space-x-1">
-                            <span>🔄</span> <span>各隊資源交易代碼執行</span>
-                        </h3>
-                        <div id="trade-team-list" class="space-y-4">
-                            <!-- 動態渲染各隊的交易操作面板 -->
-                        </div>
+                        <h3 class="font-bold text-slate-800 text-md flex items-center space-x-1"><span>🔄</span> <span>各隊資源交易代碼執行</span></h3>
+                        <div id="trade-team-list" class="space-y-4"></div>
                     </div>
-
                     <div class="border-t border-slate-100 pt-4 flex justify-end">
                         <button onclick="finishTradePhase()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl shadow transition text-sm flex items-center space-x-1">
                             <span>➡️</span> <span id="next-season-btn-text">推進至下一季</span>
@@ -139,265 +90,156 @@
                     </div>
                 </div>
 
-                <!-- 頁籤 3：老師後台設定 -->
                 <div id="tab-admin" class="hidden space-y-8">
-                    <!-- 基本規則自訂 -->
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
-                        <h3 class="font-bold text-slate-900 border-b pb-2 text-sm flex items-center space-x-1">
-                            <span>⚙️</span> <span>核心環境變數自訂</span>
-                        </h3>
+                        <h3 class="font-bold text-slate-900 border-b pb-2 text-sm flex items-center space-x-1"><span>⚙️</span> <span>核心環境變數自訂</span></h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1">營隊經營總年數 (回合數)</label>
-                                <input type="number" id="cfg-total-years" min="1" max="10" class="w-full border rounded p-2 text-sm" onchange="updateConfig()">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1">前台抽卡推進按鈕文字</label>
-                                <input type="text" id="cfg-btn-name" class="w-full border rounded p-2 text-sm" onchange="updateConfig()">
-                            </div>
+                            <div><label class="block text-xs font-bold text-slate-700 mb-1">總回合數(年)</label><input type="number" id="cfg-total-years" min="1" class="w-full border rounded p-2 text-sm" onchange="updateConfig()"></div>
+                            <div><label class="block text-xs font-bold text-slate-700 mb-1">按鈕文字</label><input type="text" id="cfg-btn-name" class="w-full border rounded p-2 text-sm" onchange="updateConfig()"></div>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">遊戲結局標題</label>
                             <input type="text" id="cfg-end-title" class="w-full border rounded p-2 text-sm mb-2" onchange="updateConfig()">
-                            <label class="block text-xs font-bold text-slate-700 mb-1">遊戲結局公告內容文字 (背景自訂)</label>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">結局公告內容</label>
                             <textarea id="cfg-end-content" rows="3" class="w-full border rounded p-2 text-sm" onchange="updateConfig()"></textarea>
                         </div>
                     </div>
-
-                    <!-- 隊伍管理 -->
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
                         <div class="flex justify-between items-center border-b pb-2">
-                            <h3 class="font-bold text-slate-900 text-sm flex items-center space-x-1">
-                                <span>👥</span> <span>隊伍與職業註冊</span>
-                            </h3>
-                            <button onclick="addNewTeamRow()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-1.5 rounded transition">
-                                ➕ 新增隊伍
-                            </button>
+                            <h3 class="font-bold text-slate-900 text-sm">👥 隊伍與職業註冊</h3>
+                            <button onclick="addNewTeamRow()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-1.5 rounded transition">➕ 新增隊伍</button>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs">
-                                <thead>
-                                    <tr class="text-slate-500 uppercase border-b border-slate-200">
-                                        <th class="pb-2 font-bold">隊伍名稱</th>
-                                        <th class="pb-2 font-bold">分配職業</th>
-                                        <th class="pb-2 font-bold text-center">操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="admin-team-table-body" class="divide-y divide-slate-200">
-                                    <!-- 動態生成隊伍編輯行 -->
-                                </tbody>
+                                <thead><tr class="text-slate-500 uppercase border-b border-slate-200"><th class="pb-2">隊伍名稱</th><th class="pb-2">分配職業</th><th class="pb-2 text-center">操作</th></tr></thead>
+                                <tbody id="admin-team-table-body" class="divide-y divide-slate-200"></tbody>
                             </table>
                         </div>
                     </div>
-
-                    <!-- 職業卡池與機率管理 -->
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
                         <div class="flex justify-between items-center border-b pb-2">
-                            <h3 class="font-bold text-slate-900 text-sm flex items-center space-x-1">
-                                <span>🎴</span> <span>自訂職業專屬卡池與出現權重機率</span>
-                            </h3>
+                            <h3 class="font-bold text-slate-900 text-sm">🎴 自訂職業卡池</h3>
                             <div class="flex space-x-2">
                                 <input type="text" id="new-profession-name" placeholder="新職業名稱" class="border rounded px-2 py-1 text-xs">
-                                <button onclick="addNewProfession()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1 rounded transition">
-                                    ➕ 新增職業
-                                </button>
+                                <button onclick="addNewProfession()" class="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded transition">➕ 新增職業</button>
                             </div>
                         </div>
-                        
-                        <!-- 職業卡池摺疊清單 -->
-                        <div id="admin-profession-container" class="space-y-4">
-                            <!-- 動態渲染卡池自訂內容 -->
-                        </div>
+                        <div id="admin-profession-container" class="space-y-4"></div>
                     </div>
-
-                    <!-- 行動代幣轉換規則自訂 -->
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
                         <div class="flex justify-between items-center border-b pb-2">
-                            <h3 class="font-bold text-slate-900 text-sm flex items-center space-x-1">
-                                <span>🔄</span> <span>行動代幣資源交易公式自訂</span>
-                            </h3>
-                            <button onclick="addNewTradeRule()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-1.5 rounded transition">
-                                ➕ 新增交易規則
-                            </button>
+                            <h3 class="font-bold text-slate-900 text-sm">🔄 行動代幣交易規則</h3>
+                            <button onclick="addNewTradeRule()" class="bg-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded transition">➕ 新增規則</button>
                         </div>
-                        <div id="admin-trade-rules-list" class="space-y-3">
-                            <!-- 動態生成規則自訂行 -->
-                        </div>
+                        <div id="admin-trade-rules-list" class="space-y-3"></div>
                     </div>
-
-                    <!-- 進階資料備份與還原 -->
                     <div class="bg-red-50 p-4 rounded-xl border border-red-200 space-y-4">
-                        <h3 class="font-bold text-red-900 text-sm flex items-center space-x-1">
-                            <span>💾</span> <span>系統核心資料管理與擴充介面</span>
-                        </h3>
-                        <p class="text-xs text-red-700">您可以直接匯出或匯入完整的 JSON 設定檔，也可以一鍵清除當前梯次快取重新開局。</p>
+                        <h3 class="font-bold text-red-900 text-sm">💾 系統核心資料管理</h3>
                         <div class="flex flex-wrap gap-3">
-                            <button onclick="exportData()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded shadow transition">
-                                📤 匯出完整設定檔 (JSON)
-                            </button>
-                            <label class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded shadow transition cursor-pointer text-center">
-                                📥 匯入設定檔 (JSON)
-                                <input type="file" id="import-file-input" class="hidden" onchange="importData(event)">
+                            <button onclick="exportData()" class="bg-indigo-600 text-white text-xs font-bold px-4 py-2 rounded shadow transition">📤 匯出設定檔 (JSON)</button>
+                            <label class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded shadow transition cursor-pointer text-center">
+                                📥 匯入設定檔 (JSON) <input type="file" class="hidden" onchange="importData(event)">
                             </label>
-                            <button onclick="resetToDefaultState()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded shadow transition">
-                                ⚠️ 清除快取並重置全新局
-                            </button>
+                            <button onclick="resetToDefaultState()" class="bg-red-600 text-white text-xs font-bold px-4 py-2 rounded shadow transition">⚠️ 清除重置全新局</button>
                         </div>
                     </div>
                 </div>
-
             </div>
         </section>
     </main>
 
-    <!-- 彈出視窗 1：季度抽卡事件結果視窗 (Modal) -->
     <div id="gacha-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-100 transform transition-all scale-95 duration-200">
-            <!-- 卡片頂部漸變裝飾 -->
             <div id="modal-header-banner" class="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 text-white text-center relative">
-                <span id="modal-card-rarity" class="absolute top-4 right-4 bg-white/20 text-xs font-bold px-2.5 py-0.5 rounded-full tracking-wider">SSR</span>
+                <span id="modal-card-rarity" class="absolute top-4 right-4 bg-white/20 text-xs font-bold px-2.5 py-0.5 rounded-full">SSR</span>
                 <div class="text-5xl mb-2">🎁</div>
-                <h3 id="modal-card-name" class="text-2xl font-black tracking-wide">事件卡片名稱</h3>
-                <p id="modal-team-target" class="text-white/80 text-xs mt-1 font-bold">火箭隊 (職業：AI藝術家)</p>
+                <h3 id="modal-card-name" class="text-2xl font-black tracking-wide">事件卡片</h3>
+                <p id="modal-team-target" class="text-white/80 text-xs mt-1 font-bold">團隊</p>
             </div>
-            <!-- 卡片內文描述 -->
             <div class="p-6 space-y-6">
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 text-slate-700 text-sm leading-relaxed whitespace-pre-wrap text-center font-medium" id="modal-card-text">
-                    這裡會顯示自訂的抽卡結果敘述文字內容...
-                </div>
-                <!-- 數值影響展示 -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 text-slate-700 text-sm leading-relaxed whitespace-pre-wrap text-center font-medium" id="modal-card-text"></div>
                 <div>
                     <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 text-center">📊 團隊數值變動影響</h4>
                     <div class="grid grid-cols-3 gap-3 text-center">
-                        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                            <span class="block text-lg">⚡ 精力</span>
-                            <span id="modal-eff-energy" class="text-md font-black text-slate-800">+0</span>
-                        </div>
-                        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                            <span class="block text-lg">🧠 心態</span>
-                            <span id="modal-eff-mind" class="text-md font-black text-slate-800">+0</span>
-                        </div>
-                        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                            <span class="block text-lg">💰 金幣</span>
-                            <span id="modal-eff-coin" class="text-md font-black text-slate-800">+0</span>
-                        </div>
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100"><span class="block text-lg">⚡ 精力</span><span id="modal-eff-energy" class="text-md font-black text-slate-800">+0</span></div>
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100"><span class="block text-lg">🧠 心態</span><span id="modal-eff-mind" class="text-md font-black text-slate-800">+0</span></div>
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100"><span class="block text-lg">💰 金幣</span><span id="modal-eff-coin" class="text-md font-black text-slate-800">+0</span></div>
                     </div>
                 </div>
             </div>
-            <!-- 關閉更新按鈕 -->
             <div class="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-center">
-                <button onclick="closeGachaModal()" class="w-full md:w-auto bg-slate-900 hover:bg-slate-800 text-white font-bold px-10 py-2.5 rounded-xl shadow transition text-sm tracking-wide">
-                    確認並套用數值變動
-                </button>
+                <button onclick="closeGachaModal()" class="w-full md:w-auto bg-slate-900 hover:bg-slate-800 text-white font-bold px-10 py-2.5 rounded-xl shadow transition text-sm">確認並套用數值變動</button>
             </div>
         </div>
     </div>
 
-    <!-- 彈出視窗 2：最終遊戲結局視窗 -->
     <div id="ending-modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-amber-200 transform transition-all text-center p-8 space-y-6">
             <div class="text-6xl animate-bounce">🏆</div>
-            <h2 id="ending-title-display" class="text-3xl font-black text-amber-600 tracking-wide">營隊圓滿結束！</h2>
-            
-            <div id="ending-content-display" class="bg-amber-50 p-5 rounded-2xl text-slate-700 text-sm leading-relaxed border border-amber-100 whitespace-pre-wrap max-h-[250px] overflow-y-auto custom-scrollbar">
-                結局內容公告顯示區...
-            </div>
-
+            <h2 id="ending-title-display" class="text-3xl font-black text-amber-600 tracking-wide">營隊結束</h2>
+            <div id="ending-content-display" class="bg-amber-50 p-5 rounded-2xl text-slate-700 text-sm leading-relaxed border border-amber-100 whitespace-pre-wrap max-h-[250px] overflow-y-auto custom-scrollbar"></div>
             <div class="border-t border-slate-100 pt-4">
                 <h4 class="font-bold text-slate-900 mb-3 text-sm">🏅 最終隊伍榮譽榜 🏅</h4>
-                <div id="ending-scoreboard-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
-                    <!-- 結局結算清單 -->
-                </div>
+                <div id="ending-scoreboard-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left"></div>
             </div>
-
             <div class="pt-2 flex justify-center space-x-4">
-                <button onclick="document.getElementById('ending-modal').classList.add('hidden')" class="bg-slate-600 hover:bg-slate-700 text-white font-bold px-6 py-2 rounded-xl text-xs transition">
-                    關閉視窗查看看板
-                </button>
-                <button onclick="resetToDefaultState()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-2 rounded-xl text-xs transition shadow">
-                    開啟全新局
-                </button>
+                <button onclick="document.getElementById('ending-modal').classList.add('hidden')" class="bg-slate-600 text-white font-bold px-6 py-2 rounded-xl text-xs transition">關閉視窗</button>
+                <button onclick="resetToDefaultState()" class="bg-indigo-600 text-white font-bold px-6 py-2 rounded-xl text-xs transition">開啟全新局</button>
             </div>
         </div>
     </div>
 
-
-    <!-- 核心系統邏輯 JavaScript 實作 -->
     <script>
-        // 1. 初始化預設資料結構 (若快取無資料則加載此預設值)
         const DEFAULT_STATE = {
             config: {
                 totalYears: 3,
-                buttonName: "執行季度決策抽卡",
+                buttonName: "執行抽卡",
                 endingTitle: "🎉 營隊圓滿結算！榮耀時刻",
-                endingContent: "恭喜所有職業小組順利完成了數年的經營模擬挑戰！\n在面對無數未知的季度突發事件中，大家都展現了驚人的團隊協作精神。\n現在讓我們一起結算所有組別的最終資產與狀態，選出最頂尖的明星經營團隊！",
+                endingContent: "恭喜所有職業小組順利完成了經營模擬挑戰！\n大家都展現了驚人的團隊精神。\n讓我們一起結算最終資產與狀態，選出頂尖的經營團隊！",
                 tradeRules: [
                     { id: "r1", text: "🔧 消耗 1 行動代幣 + 2 金幣 ➡️ 換取 3 精力", token: 1, coin: 2, e: 3, m: 0, c: 0 },
-                    { id: "r2", text: "🧘 消耗 1 行動代幣 ➡️ 換取 2 心態", token: 1, coin: 0, e: 0, m: 2, c: 0 },
-                    { id: "r3", text: "投資 ➡️ 消耗 4 金幣 ➡️ 獲得 1 行動代幣", token: -1, coin: 4, e: 0, m: 0, c: 0 }
+                    { id: "r2", text: "🧘 消耗 1 行動代幣 ➡️ 換取 2 心態", token: 1, coin: 0, e: 0, m: 2, c: 0 }
                 ]
             },
             professions: {
                 "AI藝術家": [
-                    { id: "ai_1", name: "指令大爆發", weight: 40, text: "掌握了高階負向提示詞與權重調整，算出了驚世神作！\n團隊士氣大振，獲得大量委託金！", e: -1, m: 3, c: 6 },
-                    { id: "ai_2", name: "電腦主機藍屏", weight: 20, text: "算圖到一半主機突然過熱燒毀，未存檔的算圖稿件全部消失...\n隊員們感到心力交瘁。", e: -3, m: -4, c: -2 },
-                    { id: "ai_3", name: "獲得社群暴紅", weight: 40, text: "將作品分享到網路上引發病毒式瘋傳，大量粉絲前來贊助！", e: 0, m: 2, c: 8 }
+                    { id: "ai_1", name: "指令大爆發", weight: 40, text: "掌握了高階提示詞，算出了驚世神作！\n團隊士氣大振！", e: -1, m: 3, c: 6 },
+                    { id: "ai_2", name: "主機藍屏", weight: 20, text: "算圖到一半主機燒毀...\n隊員們感到心力交瘁。", e: -3, m: -4, c: -2 }
                 ],
                 "科技偵探": [
-                    { id: "det_1", name: "大數據破案", weight: 50, text: "成功利用特徵比對與AI數據追蹤，精準破獲跨國網路詐騙案！\n獲得委託人頒發的高額破案獎金！", e: -2, m: 4, c: 10 },
-                    { id: "det_2", name: "追查陷入死胡同", weight: 30, text: "查了一整夜的數位蹤跡，結果發現對方的IP全是跳板伺服器，線索完全中斷...\n隊員們精疲力竭。", e: -4, m: -3, c: 0 },
-                    { id: "det_3", name: "民間熱心贊助", weight: 20, text: "偵探事務所的專業形象受到在地企業讚賞，提供了一筆硬體升級贊助金。", e: 0, m: 1, c: 4 }
+                    { id: "det_1", name: "大數據破案", weight: 50, text: "成功利用AI破獲網路詐騙案！\n獲得高額獎金！", e: -2, m: 4, c: 10 }
                 ]
             },
             teams: [
-                { id: "t1", name: "神奇算圖小隊", profession: "AI藝術家", energy: 10, mind: 10, coin: 0, tokens: 2, hasDrawn: false },
-                { id: "t2", name: "數據柯南組", profession: "科技偵探", energy: 10, mind: 10, coin: 0, tokens: 2, hasDrawn: false }
+                { id: "t1", name: "第一組", profession: "AI藝術家", energy: 10, mind: 10, coin: 0, tokens: 2, hasDrawn: false }
             ],
-            currentYear: 1,
-            currentSeason: 0, // 0:春, 1:夏, 2:秋, 3:冬
-            currentPhase: "play", // play: 抽卡階段, trade: 代幣交易階段
-            gameOver: false
+            currentYear: 1, currentSeason: 0, currentPhase: "play", gameOver: false
         };
 
         let state = {};
         const SEASONS = ["春季", "夏季", "秋季", "冬季"];
-        let pendingReward = null; // 儲存當前抽中尚未結算的卡片與隊伍資訊
+        let pendingReward = null;
 
-        // 2. 初始化與狀態加載
         function initSystem() {
-            const saved = localStorage.getItem("camp_sim_state_v1");
+            const saved = localStorage.getItem("camp_sim_state_v2");
             if (saved) {
-                try {
-                    state = JSON.parse(saved);
-                    // 確保必要欄位防呆
-                    if (!state.currentPhase) state.currentPhase = "play";
-                } catch(e) {
-                    state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-                }
-            } else {
-                state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-            }
-            saveState();
-            syncAdminInputs();
-            render();
+                try { state = JSON.parse(saved); if (!state.currentPhase) state.currentPhase = "play"; } 
+                catch(e) { state = JSON.parse(JSON.stringify(DEFAULT_STATE)); }
+            } else { state = JSON.parse(JSON.stringify(DEFAULT_STATE)); }
+            saveState(); syncAdminInputs(); render();
         }
 
-        function saveState() {
-            localStorage.setItem("camp_sim_state_v1", JSON.stringify(state));
-        }
+        function saveState() { localStorage.setItem("camp_sim_state_v2", JSON.stringify(state)); }
 
         function resetToDefaultState() {
-            if(confirm("確定要清除所有當前的隊伍進度、設定檔，並完全重置系統嗎？此操作無法還原！")) {
+            if(confirm("確定要重置系統嗎？此操作無法還原！")) {
                 state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-                saveState();
-                syncAdminInputs();
+                saveState(); syncAdminInputs();
                 document.getElementById('ending-modal').classList.add('hidden');
-                switchTab('play');
-                render();
+                switchTab('play'); render();
             }
         }
 
-        // 3. 頁籤切換控制
         function switchTab(tabName) {
             document.getElementById("tab-play").classList.add("hidden");
             document.getElementById("tab-trade").classList.add("hidden");
@@ -407,19 +249,10 @@
             document.getElementById(`tab-trade-btn`).className = "px-5 py-2 rounded-lg font-bold text-sm transition-all text-slate-600 hover:text-slate-900";
             document.getElementById(`tab-admin-btn`).className = "px-5 py-2 rounded-lg font-bold text-sm transition-all text-slate-600 hover:text-slate-900";
 
-            if (tabName === 'play') {
-                document.getElementById("tab-play").classList.remove("hidden");
-                document.getElementById(`tab-play-btn`).className = "px-5 py-2 rounded-lg font-bold text-sm transition-all shadow-sm bg-white text-indigo-700";
-            } else if (tabName === 'trade') {
-                document.getElementById("tab-trade").classList.remove("hidden");
-                document.getElementById(`tab-trade-btn`).className = "px-5 py-2 rounded-lg font-bold text-sm transition-all shadow-sm bg-white text-indigo-700";
-            } else if (tabName === 'admin') {
-                document.getElementById("tab-admin").classList.remove("hidden");
-                document.getElementById(`tab-admin-btn`).className = "px-5 py-2 rounded-lg font-bold text-sm transition-all shadow-sm bg-white text-indigo-700";
-            }
+            document.getElementById("tab-" + tabName).classList.remove("hidden");
+            document.getElementById(`tab-${tabName}-btn`).className = "px-5 py-2 rounded-lg font-bold text-sm transition-all shadow-sm bg-white text-indigo-700";
         }
 
-        // 4. 後台輸入框欄位數值同步
         function syncAdminInputs() {
             document.getElementById("cfg-total-years").value = state.config.totalYears;
             document.getElementById("cfg-btn-name").value = state.config.buttonName;
@@ -432,278 +265,118 @@
             state.config.buttonName = document.getElementById("cfg-btn-name").value || "抽卡";
             state.config.endingTitle = document.getElementById("cfg-end-title").value;
             state.config.endingContent = document.getElementById("cfg-end-content").value;
-            saveState();
-            render();
+            saveState(); render();
         }
 
-        // 5. 核心渲染渲染函式
         function render() {
-            // 更新全域及看板計時器
             const timeText = `第 ${state.currentYear} 年 - ${SEASONS[state.currentSeason]}`;
             document.getElementById("global-timer").innerText = `📅 ${timeText} (${state.currentPhase === 'play' ? '事件抽卡中' : '季末交易中'})`;
             document.getElementById("big-timer-display").innerText = timeText;
 
-            // 渲染左側記分板
-            renderScoreboard();
+            renderScoreboard(); renderPlayGrid(); renderTradePhase();
+            renderAdminTeams(); renderAdminProfessions(); renderAdminTradeRules();
 
-            // 渲染前台抽卡主畫面
-            renderPlayGrid();
-
-            // 渲染季末交易操作區
-            renderTradePhase();
-
-            // 渲染老師後台的各個配置列表
-            renderAdminTeams();
-            renderAdminProfessions();
-            renderAdminTradeRules();
-
-            // 檢查是否觸發遊戲結局
-            if (state.gameOver) {
-                showEndingModal();
-            }
+            if (state.gameOver) showEndingModal();
         }
 
-        // 5a. 渲染左側記分板 (含加減微調邏輯)
         function renderScoreboard() {
             const listContainer = document.getElementById("scoreboard-list");
             listContainer.innerHTML = "";
-
-            if (state.teams.length === 0) {
-                listContainer.innerHTML = `<div class="text-center text-xs text-slate-400 py-8">目前無隊伍，請至後台新增</div>`;
-                return;
-            }
-
             state.teams.forEach((team, index) => {
-                // 依據數值範圍決定進度條顏色
                 const getBarColor = (val) => val > 6 ? 'bg-emerald-500' : val >= 4 ? 'bg-amber-500' : 'bg-rose-500';
                 const energyPct = Math.min(Math.max(team.energy * 10, 0), 100);
                 const mindPct = Math.min(Math.max(team.mind * 10, 0), 100);
-
-                const cardHtml = `
-                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2.5 relative shadow-sm hover:border-indigo-300 transition-all">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="font-bold text-slate-900 text-sm flex items-center space-x-1.5">
-                                    <span class="inline-block w-2 h-2 rounded-full bg-indigo-600"></span>
-                                    <span>${team.name}</span>
-                                </h3>
-                                <span class="inline-block bg-indigo-50 text-indigo-700 text-[11px] font-bold px-2 py-0.5 rounded mt-0.5">職業：${team.profession}</span>
-                            </div>
-                            <span class="${team.hasDrawn ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'} text-[10px] font-bold px-2 py-0.5 rounded">
-                                ${team.hasDrawn ? '✅ 本季已抽' : '⏳ 尚未抽卡'}
-                            </span>
+                listContainer.innerHTML += `
+                    <div class="bg-slate-50 border rounded-xl p-3 shadow-sm">
+                        <div class="flex justify-between text-sm font-bold text-slate-900">
+                            <span>${team.name} (${team.profession})</span>
+                            <span>${team.hasDrawn ? '✅' : '⏳'}</span>
                         </div>
-
-                        <!-- 核心四項數值與調整 -->
-                        <div class="space-y-2 pt-1 border-t border-slate-100">
-                            <!-- 精力 -->
-                            <div class="flex items-center justify-between text-xs">
-                                <span class="w-12 font-medium text-slate-600">⚡ 精力:</span>
-                                <div class="flex-1 mx-2 bg-slate-200 h-2 rounded-full overflow-hidden">
-                                    <div class="h-full ${getBarColor(team.energy)} transition-all" style="width: ${energyPct}%"></div>
-                                </div>
-                                <div class="flex items-center space-x-1">
-                                    <button onclick="tweakStat(${index}, 'energy', -1)" class="w-5 h-5 bg-white border border-slate-300 text-slate-600 font-bold rounded flex items-center justify-center hover:bg-slate-100 text-xs">-</button>
-                                    <span class="w-5 text-center font-bold text-slate-800 text-[11px]">${team.energy}</span>
-                                    <button onclick="tweakStat(${index}, 'energy', 1)" class="w-5 h-5 bg-white border border-slate-300 text-slate-600 font-bold rounded flex items-center justify-center hover:bg-slate-100 text-xs">+</button>
-                                </div>
+                        <div class="text-xs space-y-1 mt-2">
+                            <div class="flex items-center"><span class="w-12">⚡精力</span>
+                                <div class="flex-1 bg-slate-200 h-2 mx-1"><div class="h-full ${getBarColor(team.energy)}" style="width:${energyPct}%"></div></div>
+                                <button onclick="tweak(${index},'energy',-1)">-</button><span class="mx-1">${team.energy}</span><button onclick="tweak(${index},'energy',1)">+</button>
                             </div>
-                            <!-- 心態 -->
-                            <div class="flex items-center justify-between text-xs">
-                                <span class="w-12 font-medium text-slate-600">🧠 心態:</span>
-                                <div class="flex-1 mx-2 bg-slate-200 h-2 rounded-full overflow-hidden">
-                                    <div class="h-full ${getBarColor(team.mind)} transition-all" style="width: ${mindPct}%"></div>
-                                </div>
-                                <div class="flex items-center space-x-1">
-                                    <button onclick="tweakStat(${index}, 'mind', -1)" class="w-5 h-5 bg-white border border-slate-300 text-slate-600 font-bold rounded flex items-center justify-center hover:bg-slate-100 text-xs">-</button>
-                                    <span class="w-5 text-center font-bold text-slate-800 text-[11px]">${team.mind}</span>
-                                    <button onclick="tweakStat(${index}, 'mind', 1)" class="w-5 h-5 bg-white border border-slate-300 text-slate-600 font-bold rounded flex items-center justify-center hover:bg-slate-100 text-xs">+</button>
-                                </div>
+                            <div class="flex items-center"><span class="w-12">🧠心態</span>
+                                <div class="flex-1 bg-slate-200 h-2 mx-1"><div class="h-full ${getBarColor(team.mind)}" style="width:${mindPct}%"></div></div>
+                                <button onclick="tweak(${index},'mind',-1)">-</button><span class="mx-1">${team.mind}</span><button onclick="tweak(${index},'mind',1)">+</button>
                             </div>
-                            <!-- 金幣與代幣並排 -->
-                            <div class="grid grid-cols-2 gap-2 pt-1">
-                                <div class="bg-white border rounded p-1.5 flex items-center justify-between">
-                                    <span class="text-[11px] text-slate-500 font-medium">💰 金幣</span>
-                                    <div class="flex items-center space-x-1">
-                                        <button onclick="tweakStat(${index}, 'coin', -1)" class="px-1 text-[10px] bg-slate-100 rounded hover:bg-slate-200 font-bold">-</button>
-                                        <span class="font-bold text-amber-600 text-[11px]">${team.coin}</span>
-                                        <button onclick="tweakStat(${index}, 'coin', 1)" class="px-1 text-[10px] bg-slate-100 rounded hover:bg-slate-200 font-bold">+</button>
-                                    </div>
-                                </div>
-                                <div class="bg-white border rounded p-1.5 flex items-center justify-between">
-                                    <span class="text-[11px] text-slate-500 font-medium">🪙 代幣</span>
-                                    <div class="flex items-center space-x-1">
-                                        <button onclick="tweakStat(${index}, 'tokens', -1)" class="px-1 text-[10px] bg-slate-100 rounded hover:bg-slate-200 font-bold">-</button>
-                                        <span class="font-bold text-indigo-600 text-[11px]">${team.tokens}</span>
-                                        <button onclick="tweakStat(${index}, 'tokens', 1)" class="px-1 text-[10px] bg-slate-100 rounded hover:bg-slate-200 font-bold">+</button>
-                                    </div>
-                                </div>
+                            <div class="flex justify-between mt-1">
+                                <div>💰金幣: <button onclick="tweak(${index},'coin',-1)">-</button> ${team.coin} <button onclick="tweak(${index},'coin',1)">+</button></div>
+                                <div>🪙代幣: <button onclick="tweak(${index},'tokens',-1)">-</button> ${team.tokens} <button onclick="tweak(${index},'tokens',1)">+</button></div>
                             </div>
                         </div>
-                    </div>
-                `;
-                listContainer.innerHTML += cardHtml;
+                    </div>`;
             });
         }
 
-        function tweakStat(teamIndex, field, amount) {
-            state.teams[teamIndex][field] += amount;
-            // 精力與心態不小於0
-            if((field === 'energy' || field === 'mind') && state.teams[teamIndex][field] < 0) {
-                state.teams[teamIndex][field] = 0;
-            }
-            saveState();
-            render();
+        function tweak(idx, field, amt) {
+            state.teams[idx][field] = Math.max(0, state.teams[idx][field] + amt);
+            saveState(); render();
         }
 
-        // 5b. 渲染前台抽卡主看板
         function renderPlayGrid() {
             const grid = document.getElementById("play-team-grid");
             grid.innerHTML = "";
-
             if(state.currentPhase !== 'play') {
-                grid.innerHTML = `
-                    <div class="col-span-2 bg-slate-50 border border-dashed text-center py-10 rounded-xl text-slate-500 text-sm">
-                        🔒 本季抽卡階段已結束。請切換至上方「🪙 季末代幣交易」頁籤進行處理。
-                    </div>
-                `;
+                grid.innerHTML = `<div class="col-span-2 text-center py-5">抽卡結束。請切換至「🪙 季末代幣交易」</div>`;
                 document.getElementById("advance-phase-btn").style.display = "flex";
                 return;
             }
-
             let allDrawn = true;
-
             state.teams.forEach((team, index) => {
                 if(!team.hasDrawn) allDrawn = false;
-
-                const cardHtml = `
-                    <div class="border rounded-2xl p-5 ${team.hasDrawn ? 'bg-slate-50 border-slate-200 opacity-70' : 'bg-white border-indigo-200 shadow-sm'} transition flex flex-col justify-between space-y-4">
-                        <div>
-                            <div class="text-xs text-slate-400 font-bold uppercase">TEAM ${index+1}</div>
-                            <h4 class="text-xl font-black text-slate-900 mt-0.5">${team.name}</h4>
-                            <div class="text-xs text-indigo-600 font-bold mt-1">專屬職業池：${team.profession}</div>
-                        </div>
-                        
-                        <div>
-                            ${team.hasDrawn ? `
-                                <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold py-3 px-4 rounded-xl text-center flex items-center justify-center space-x-1">
-                                    <span>✅</span> <span>本季度事件已執行完畢</span>
-                                </div>
-                            ` : `
-                                <button onclick="triggerGacha(${index})" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-3 px-4 rounded-xl transition shadow text-sm tracking-wider">
-                                    🎲 ${state.config.buttonName}
-                                </button>
-                            `}
-                        </div>
-                    </div>
-                `;
-                grid.innerHTML += cardHtml;
+                grid.innerHTML += `
+                    <div class="border rounded p-4 ${team.hasDrawn ? 'bg-slate-50 opacity-70' : 'bg-white shadow-sm'}">
+                        <h4 class="text-lg font-bold">${team.name}</h4>
+                        <div class="text-xs text-indigo-600 mb-3">${team.profession}</div>
+                        ${team.hasDrawn ? `<div class="bg-emerald-50 text-emerald-700 text-center text-xs p-2 rounded">已執行</div>` : 
+                        `<button onclick="triggerGacha(${index})" class="w-full bg-indigo-600 text-white font-bold py-2 rounded shadow text-sm">🎲 ${state.config.buttonName}</button>`}
+                    </div>`;
             });
-
-            // 控管季末結算按鈕是否高亮鎖定
-            const advanceBtn = document.getElementById("advance-phase-btn");
-            if (allDrawn) {
-                advanceBtn.className = "bg-amber-500 hover:bg-amber-600 text-white font-bold px-6 py-2.5 rounded-xl shadow transition flex items-center space-x-2 text-sm animate-pulse";
-            } else {
-                advanceBtn.className = "bg-slate-300 text-slate-500 font-bold px-6 py-2.5 rounded-xl text-sm cursor-not-allowed flex items-center space-x-2";
-            }
+            document.getElementById("advance-phase-btn").className = allDrawn ? "bg-amber-500 text-white font-bold px-6 py-2 rounded-xl" : "bg-slate-300 text-slate-500 font-bold px-6 py-2 rounded-xl cursor-not-allowed";
         }
 
-        // 5c. 渲染季末資源代幣交易頁面
         function renderTradePhase() {
             const container = document.getElementById("trade-team-list");
             container.innerHTML = "";
+            const isLast = (state.currentSeason === 3 && state.currentYear >= state.config.totalYears);
+            document.getElementById("next-season-btn-text").innerText = isLast ? "🏁 迎向大結算" : "➡️ 下一季度";
 
-            // 更新下一季推進按鈕的名稱文字描述
-            const isLastSeason = (state.currentSeason === 3 && state.currentYear >= state.config.totalYears);
-            document.getElementById("next-season-btn-text").innerText = isLastSeason ? "🏁 迎向最終遊戲結局大結算" : "➡️ 推進至下一季度";
-
-            state.teams.forEach((team, teamIdx) => {
-                let rulesButtonsHtml = "";
-                
-                state.config.tradeRules.forEach((rule) => {
-                    // 檢查隊伍代幣與金幣是否滿足消耗
-                    // 注意：若代幣為負值代表獲取，若為正值代表消耗
-                    const canTrade = (team.tokens >= rule.token && team.coin >= rule.coin);
-                    
-                    rulesButtonsHtml += `
-                        <button onclick="executeTrade(${teamIdx}, '${rule.id}')" 
-                                ${canTrade ? '' : 'disabled'}
-                                class="text-left p-2 rounded border text-xs font-medium transition ${canTrade ? 'bg-white border-slate-200 hover:border-indigo-400 text-slate-700 hover:bg-slate-50' : 'bg-slate-100 border-slate-100 text-slate-400 cursor-not-allowed'}">
-                            ${rule.text}
-                        </button>
-                    `;
-                });
-
-                const html = `
-                    <div class="border rounded-xl p-4 bg-slate-50 space-y-3">
-                        <div class="flex justify-between items-center border-b pb-2">
-                            <div>
-                                <span class="font-bold text-slate-900">${team.name}</span>
-                                <span class="text-xs text-slate-500 ml-2">(職業: ${team.profession})</span>
-                            </div>
-                            <div class="flex space-x-4 text-xs">
-                                <span class="bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded">🪙 當前行動代幣: ${team.tokens}</span>
-                                <span class="bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded">💰 當前金幣: ${team.coin}</span>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                            ${rulesButtonsHtml || '<div class="text-xs text-slate-400">目前未設定交易規則</div>'}
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += html;
+            state.teams.forEach((team, tIdx) => {
+                let btns = state.config.tradeRules.map(r => {
+                    const ok = (team.tokens >= r.token && team.coin >= r.coin);
+                    return `<button onclick="executeTrade(${tIdx}, '${r.id}')" ${ok?'':'disabled'} class="p-2 border text-xs ${ok?'bg-white':'bg-slate-100 opacity-50'}">${r.text}</button>`;
+                }).join('');
+                container.innerHTML += `
+                    <div class="border p-3 rounded bg-slate-50">
+                        <div class="flex justify-between mb-2 font-bold text-sm"><span>${team.name}</span><span>🪙 ${team.tokens} | 💰 ${team.coin}</span></div>
+                        <div class="grid grid-cols-2 gap-2">${btns}</div>
+                    </div>`;
             });
         }
 
-        // 6. 核心隨機權重抽卡演算法
-        function triggerGacha(teamIndex) {
-            const team = state.teams[teamIndex];
+        function triggerGacha(teamIdx) {
+            const team = state.teams[teamIdx];
             const pool = state.professions[team.profession] || [];
+            if (!pool.length) return alert("後台尚未配置事件卡片！");
             
-            if (pool.length === 0) {
-                alert(`錯誤：後台尚未為「${team.profession}」配置任何事件卡片！請先至後台自訂卡池。`);
-                return;
-            }
-
-            // 計算總權重
-            const totalWeight = pool.reduce((sum, card) => sum + (parseFloat(card.weight) || 0), 0);
-            if (totalWeight <= 0) {
-                alert("錯誤：此職業卡池內卡片的出現權重總和必須大於 0！");
-                return;
-            }
-
-            // 根據權重隨機挑選一張
-            let randomNum = Math.random() * totalWeight;
-            let selectedCard = pool[pool.length - 1]; // 預防浮點數誤差的防呆兜底
-
+            const totalWeight = pool.reduce((sum, c) => sum + (parseFloat(c.weight) || 0), 0);
+            let rand = Math.random() * totalWeight;
+            let card = pool[pool.length - 1];
             for (let i = 0; i < pool.length; i++) {
-                randomNum -= parseFloat(pool[i].weight) || 0;
-                if (randomNum <= 0) {
-                    selectedCard = pool[i];
-                    break;
-                }
+                rand -= parseFloat(pool[i].weight) || 0;
+                if (rand <= 0) { card = pool[i]; break; }
             }
 
-            // 暫存抽卡結果資料，等待玩家點擊關閉時才寫入左側核心狀態變數
-            pendingReward = {
-                teamIndex: teamIndex,
-                card: selectedCard
-            };
-
-            // 渲染並開起彈出事件視窗 (Modal)
-            document.getElementById("modal-card-name").innerText = selectedCard.name;
-            document.getElementById("modal-card-rarity").innerText = `權重: ${selectedCard.weight}`;
-            document.getElementById("modal-team-target").innerText = `${team.name} (職業：${team.profession})`;
-            document.getElementById("modal-card-text").innerText = selectedCard.text;
-            
-            // 處理數值顯示格式化字串 (+/-)
-            const fmt = (val) => val >= 0 ? `+${val}` : `${val}`;
-            document.getElementById("modal-eff-energy").innerText = fmt(selectedCard.e);
-            document.getElementById("modal-eff-mind").innerText = fmt(selectedCard.m);
-            document.getElementById("modal-eff-coin").innerText = fmt(selectedCard.c);
-
-            // 顯示視窗
+            pendingReward = { teamIndex: teamIdx, card: card };
+            document.getElementById("modal-card-name").innerText = card.name;
+            document.getElementById("modal-card-rarity").innerText = `權重: ${card.weight}`;
+            document.getElementById("modal-team-target").innerText = `${team.name} (${team.profession})`;
+            document.getElementById("modal-card-text").innerText = card.text;
+            document.getElementById("modal-eff-energy").innerText = card.e >= 0 ? `+${card.e}` : card.e;
+            document.getElementById("modal-eff-mind").innerText = card.m >= 0 ? `+${card.m}` : card.m;
+            document.getElementById("modal-eff-coin").innerText = card.c >= 0 ? `+${card.c}` : card.c;
             document.getElementById("gacha-modal").classList.remove("hidden");
         }
 
@@ -711,397 +384,125 @@
             if (pendingReward) {
                 const team = state.teams[pendingReward.teamIndex];
                 const card = pendingReward.card;
-
-                // 正式變更數值，限制最低不低於0
                 team.energy = Math.max(0, team.energy + (parseInt(card.e) || 0));
                 team.mind = Math.max(0, team.mind + (parseInt(card.m) || 0));
                 team.coin = Math.max(0, team.coin + (parseInt(card.c) || 0));
-                
-                // 標記該小組本季度已抽卡完畢
                 team.hasDrawn = true;
-
-                pendingReward = null;
-                saveState();
-                render();
+                pendingReward = null; saveState(); render();
             }
             document.getElementById("gacha-modal").classList.add("hidden");
         }
 
-        // 7. 推進階段控制邏輯
         function advancePhase() {
-            // 檢查是否每組都抽過卡了
-            const unDrawnTeams = state.teams.filter(t => !t.hasDrawn);
-            if(unDrawnTeams.length > 0) {
-                if(!confirm("注意：班級內仍有小組尚未執行本季抽卡！確定要強制跳過並直接進入季末結算代幣交易階段嗎？")) {
-                    return;
-                }
-            }
-            state.currentPhase = "trade";
-            saveState();
-            switchTab('trade');
-            render();
+            if(state.teams.some(t => !t.hasDrawn) && !confirm("有人尚未抽卡，確定跳過？")) return;
+            state.currentPhase = "trade"; saveState(); switchTab('trade'); render();
         }
 
-        function executeTrade(teamIdx, ruleId) {
-            const team = state.teams[teamIdx];
-            const rule = state.config.tradeRules.find(r => r.id === ruleId);
-            if(!rule) return;
-
-            // 執行扣除與獲得
-            team.tokens -= rule.token;
-            team.coin -= rule.coin;
-            team.energy = Math.max(0, team.energy + rule.e);
-            team.mind = Math.max(0, team.mind + rule.m);
-            team.coin = Math.max(0, team.coin + rule.c);
-
-            saveState();
-            render();
+        function executeTrade(tIdx, rId) {
+            const team = state.teams[tIdx];
+            const rule = state.config.tradeRules.find(r => r.id === rId);
+            team.tokens -= rule.token; team.coin -= rule.coin;
+            team.energy += rule.e; team.mind += rule.m; team.coin += rule.c;
+            saveState(); render();
         }
 
         function finishTradePhase() {
-            // 判斷是否為最終年的冬季結束
-            if (state.currentSeason === 3) { // 冬季
-                if (state.currentYear >= state.config.totalYears) {
-                    state.gameOver = true;
-                    saveState();
-                    render();
-                    return;
-                } else {
-                    // 跨到下一年，季度重設為春
-                    state.currentYear++;
-                    state.currentSeason = 0;
-                }
-            } else {
-                // 推進到下一季
-                state.currentSeason++;
-            }
-
-            // 重置所有隊伍的抽卡狀態標記
+            if (state.currentSeason === 3) {
+                if (state.currentYear >= state.config.totalYears) { state.gameOver = true; saveState(); render(); return; } 
+                else { state.currentYear++; state.currentSeason = 0; }
+            } else { state.currentSeason++; }
             state.teams.forEach(t => t.hasDrawn = false);
-            state.currentPhase = "play";
-            saveState();
-            switchTab('play');
-            render();
+            state.currentPhase = "play"; saveState(); switchTab('play'); render();
         }
 
-        // 8. 遊戲終局大結算視窗呈現
         function showEndingModal() {
             document.getElementById("ending-title-display").innerText = state.config.endingTitle;
-            document.getElementById("ending-content-display").innerText = state.config.endingContent.replace(/\n/g, '
-');
-
-            const rankGrid = document.getElementById("ending-scoreboard-grid");
-            rankGrid.innerHTML = "";
-
-            // 複製一份隊伍進行結算排序 (以金幣、精神、心態之加總作為最終排行榜標準分數)
-            const sorted = [...state.teams].sort((a,b) => (b.coin + b.energy + b.mind) - (a.coin + a.energy + a.mind));
-
+            document.getElementById("ending-content-display").innerText = state.config.endingContent;
+            const grid = document.getElementById("ending-scoreboard-grid");
+            grid.innerHTML = "";
+            const sorted = [...state.teams].sort((a,b) => (b.coin+b.energy+b.mind) - (a.coin+a.energy+a.mind));
             sorted.forEach((team, idx) => {
-                const totalScore = team.coin + team.energy + team.mind;
-                rankGrid.innerHTML += `
-                    <div class="bg-slate-50 border p-3 rounded-xl flex justify-between items-center text-xs">
-                        <div>
-                            <span class="font-bold text-indigo-700 mr-1">第 ${idx+1} 名</span>
-                            <span class="font-black text-slate-800">${team.name}</span>
-                            <div class="text-[10px] text-slate-400 mt-0.5">職業: ${team.profession}</div>
-                        </div>
-                        <div class="text-right">
-                            <span class="font-extrabold text-sm text-amber-600">${totalScore} 分</span>
-                            <div class="text-[9px] text-slate-400">💰${team.coin} ⚡${team.energy} 🧠${team.mind}</div>
-                        </div>
-                    </div>
-                `;
+                grid.innerHTML += `<div class="bg-slate-50 border p-3 rounded flex justify-between">
+                    <div><b>第${idx+1}名</b> ${team.name}</div>
+                    <div class="text-amber-600 font-bold">${team.coin+team.energy+team.mind}分</div></div>`;
             });
-
             document.getElementById("ending-modal").classList.remove("hidden");
         }
 
-
-        // ==========================================
-        // 9. 老師後台配置面板細部表單管理渲染
-        // ==========================================
-
-        // 隊伍表單管理
         function renderAdminTeams() {
             const tbody = document.getElementById("admin-team-table-body");
             tbody.innerHTML = "";
-
             state.teams.forEach((team, idx) => {
-                // 構建職業選單選項
-                let profOptions = "";
-                Object.keys(state.professions).forEach(pName => {
-                    profOptions += `<option value="${pName}" ${team.profession === pName ? 'selected' : ''}>${pName}</option>`;
-                });
-
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td class="py-2.5 pr-2">
-                        <input type="text" value="${team.name}" onchange="updateTeamData(${idx}, 'name', this.value)" class="w-full border rounded px-2 py-1 text-xs font-bold">
-                    </td>
-                    <td class="py-2.5 pr-2">
-                        <select onchange="updateTeamData(${idx}, 'profession', this.value)" class="w-full border rounded px-2 py-1 text-xs">
-                            ${profOptions || '<option>請先新增職業</option>'}
-                        </select>
-                    </td>
-                    <td class="py-2.5 text-center">
-                        <button onclick="deleteTeam(${idx})" class="bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold px-2 py-1 rounded transition text-[11px]">
-                            🗑️ 刪除
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
+                let opts = Object.keys(state.professions).map(p => `<option value="${p}" ${team.profession === p ? 'selected':''}>${p}</option>`).join('');
+                tbody.innerHTML += `<tr>
+                    <td><input value="${team.name}" onchange="state.teams[${idx}].name=this.value;saveState();renderScoreboard()" class="border px-1 w-full text-xs"></td>
+                    <td><select onchange="state.teams[${idx}].profession=this.value;saveState();renderPlayGrid()" class="border px-1 w-full text-xs">${opts}</select></td>
+                    <td><button onclick="if(confirm('刪除?')){state.teams.splice(${idx},1);saveState();render()}" class="text-rose-600">刪除</button></td></tr>`;
             });
         }
 
         function addNewTeamRow() {
-            const firstProf = Object.keys(state.professions)[0] || "未命名職業";
-            state.teams.push({
-                id: "t_" + Date.now(),
-                name: "新小組" + (state.teams.length + 1),
-                profession: firstProf,
-                energy: 10,
-                mind: 10,
-                coin: 0,
-                tokens: 2,
-                hasDrawn: false
-            });
-            saveState();
-            render();
+            state.teams.push({ id: "t_"+Date.now(), name: "新小組", profession: Object.keys(state.professions)[0] || "", energy: 10, mind: 10, coin: 0, tokens: 2, hasDrawn: false });
+            saveState(); render();
         }
 
-        function updateTeamData(idx, field, value) {
-            state.teams[idx][field] = value;
-            saveState();
-            // 為了不打斷輸入焦點，記分板異步更新或僅存檔
-            renderScoreboard();
-            renderPlayGrid();
-        }
-
-        function deleteTeam(idx) {
-            if(confirm("確定要刪除這個小組組別嗎？")) {
-                state.teams.splice(idx, 1);
-                saveState();
-                render();
-            }
-        }
-
-        // 職業與卡池表單管理
         function renderAdminProfessions() {
             const container = document.getElementById("admin-profession-container");
             container.innerHTML = "";
-
-            Object.keys(state.professions).forEach((pName) => {
-                const cardPool = state.professions[pName];
-                
-                let cardRowsHtml = "";
-                cardPool.forEach((card, cardIdx) => {
-                    cardRowsHtml += `
-                        <div class="grid grid-cols-1 md:grid-cols-12 gap-2 bg-white p-3 rounded-lg border border-slate-200 items-center text-xs">
-                            <div class="md:col-span-3">
-                                <label class="block text-[10px] text-slate-400 font-bold">卡片/事件名稱</label>
-                                <input type="text" value="${card.name}" onchange="updateCardData('${pName}', ${cardIdx}, 'name', this.value)" class="w-full border rounded px-1.5 py-0.5 font-bold">
-                            </div>
-                            <div class="md:col-span-1">
-                                <label class="block text-[10px] text-slate-400 font-bold">出現權重</label>
-                                <input type="number" value="${card.weight}" onchange="updateCardData('${pName}', ${cardIdx}, 'weight', this.value)" class="w-full border rounded px-1.5 py-0.5">
-                            </div>
-                            <div class="md:col-span-4">
-                                <label class="block text-[10px] text-slate-400 font-bold">視窗彈出結果敘述文字</label>
-                                <input type="text" value="${card.text}" onchange="updateCardData('${pName}', ${cardIdx}, 'text', this.value)" class="w-full border rounded px-1.5 py-0.5 text-slate-600">
-                            </div>
-                            <div class="md:col-span-1">
-                                <label class="block text-[10px] text-slate-400 font-bold">⚡精力</label>
-                                <input type="number" value="${card.e}" onchange="updateCardData('${pName}', ${cardIdx}, 'e', this.value)" class="w-full border rounded px-1.5 py-0.5">
-                            </div>
-                            <div class="md:col-span-1">
-                                <label class="block text-[10px] text-slate-400 font-bold">🧠心態</label>
-                                <input type="number" value="${card.m}" onchange="updateCardData('${pName}', ${cardIdx}, 'm', this.value)" class="w-full border rounded px-1.5 py-0.5">
-                            </div>
-                            <div class="md:col-span-1">
-                                <label class="block text-[10px] text-slate-400 font-bold">💰金幣</label>
-                                <input type="number" value="${card.c}" onchange="updateCardData('${pName}', ${cardIdx}, 'c', this.value)" class="w-full border rounded px-1.5 py-0.5">
-                            </div>
-                            <div class="md:col-span-1 text-center pt-3 md:pt-0">
-                                <button onclick="deleteCard('${pName}', ${cardIdx})" class="text-rose-600 hover:text-rose-900 font-bold text-[11px]">✕ 移除</button>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                const profBlock = document.createElement("div");
-                profBlock.className = "bg-white/60 border border-slate-200 rounded-xl p-4 space-y-3 shadow-inner";
-                profBlock.innerHTML = `
-                    <div class="flex justify-between items-center bg-slate-200/60 p-2 rounded-lg">
-                        <span class="font-black text-slate-800 text-xs">🛠️ 職業池：${pName} (共 ${cardPool.length} 張卡片)</span>
-                        <div class="flex space-x-2">
-                            <button onclick="addNewCardToPool('${pName}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold px-2 py-1 rounded transition">
-                                ➕ 新增卡片事件
-                            </button>
-                            <button onclick="deleteProfession('${pName}')" class="bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold px-2 py-1 rounded transition">
-                                🗑️ 刪除整個職業池
-                            </button>
-                        </div>
-                    </div>
-                    <div class="space-y-2 pl-2 border-l-2 border-slate-300">
-                        ${cardRowsHtml || '<div class="text-xs text-slate-400 py-2">目前尚無卡片，請點擊新增</div>'}
-                    </div>
-                `;
-                container.appendChild(profBlock);
+            Object.keys(state.professions).forEach(pName => {
+                let cardsHtml = state.professions[pName].map((c, i) => `
+                    <div class="grid grid-cols-12 gap-1 text-[10px] items-center border-b py-1">
+                        <div class="col-span-3"><input value="${c.name}" onchange="state.professions['${pName}'][${i}].name=this.value;saveState()" class="border w-full"></div>
+                        <div class="col-span-1"><input value="${c.weight}" type="number" onchange="state.professions['${pName}'][${i}].weight=parseInt(this.value);saveState()" class="border w-full"></div>
+                        <div class="col-span-4"><input value="${c.text}" onchange="state.professions['${pName}'][${i}].text=this.value;saveState()" class="border w-full"></div>
+                        <div class="col-span-1"><input value="${c.e}" type="number" onchange="state.professions['${pName}'][${i}].e=parseInt(this.value);saveState()" class="border w-full"></div>
+                        <div class="col-span-1"><input value="${c.m}" type="number" onchange="state.professions['${pName}'][${i}].m=parseInt(this.value);saveState()" class="border w-full"></div>
+                        <div class="col-span-1"><input value="${c.c}" type="number" onchange="state.professions['${pName}'][${i}].c=parseInt(this.value);saveState()" class="border w-full"></div>
+                        <div class="col-span-1"><button onclick="state.professions['${pName}'].splice(${i},1);saveState();render()" class="text-red-500">刪</button></div>
+                    </div>`).join('');
+                container.innerHTML += `<div class="border p-2 bg-white rounded"><div class="flex justify-between font-bold mb-2"><span>${pName}</span><div><button onclick="state.professions['${pName}'].push({name:'新事件',weight:10,text:'描述',e:0,m:0,c:0});saveState();render()" class="bg-indigo-500 text-white px-2 rounded">+卡片</button> <button onclick="delete state.professions['${pName}'];saveState();render()" class="bg-red-500 text-white px-2 rounded">刪除職業</button></div></div>${cardsHtml}</div>`;
             });
         }
 
         function addNewProfession() {
-            const input = document.getElementById("new-profession-name");
-            const name = input.value.trim();
-            if(!name) { alert("請輸入職業名稱！"); return; }
-            if(state.professions[name]) { alert("此職業名稱已存在！"); return; }
-
-            state.professions[name] = [];
-            input.value = "";
-            saveState();
-            render();
+            let name = document.getElementById("new-profession-name").value;
+            if(name && !state.professions[name]) { state.professions[name] = []; document.getElementById("new-profession-name").value = ""; saveState(); render(); }
         }
 
-        function deleteProfession(pName) {
-            if(confirm(`確定要刪除「${pName}」職業及其名下的所有事件卡池嗎？關聯此職業的隊伍將需要重新指定職業。`)) {
-                delete state.professions[pName];
-                saveState();
-                render();
-            }
-        }
-
-        function addNewCardToPool(pName) {
-            state.professions[pName].push({
-                id: "card_" + Date.now() + "_" + Math.floor(Math.random()*1000),
-                name: "新随機事件",
-                weight: 10,
-                text: "請在這裡自訂對應抽卡彈出後的結果情境敘述字串。",
-                e: 0, m: 0, c: 0
-            });
-            saveState();
-            render();
-        }
-
-        function updateCardData(pName, cardIdx, field, value) {
-            if (field === 'weight' || field === 'e' || field === 'm' || field === 'c') {
-                state.professions[pName][cardIdx][field] = parseInt(value) || 0;
-            } else {
-                state.professions[pName][cardIdx][field] = value;
-            }
-            saveState();
-        }
-
-        function deleteCard(pName, cardIdx) {
-            state.professions[pName].splice(cardIdx, 1);
-            saveState();
-            render();
-        }
-
-        // 代幣代碼公式管理
         function renderAdminTradeRules() {
             const container = document.getElementById("admin-trade-rules-list");
             container.innerHTML = "";
-
-            state.config.tradeRules.forEach((rule, idx) => {
-                container.innerHTML += `
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-2 bg-white p-3 rounded-xl border border-slate-200 text-xs items-center">
-                        <div class="md:col-span-4">
-                            <label class="block text-[9px] text-slate-400 font-bold">按鈕顯示說明文字</label>
-                            <input type="text" value="${rule.text}" onchange="updateRuleData(${idx}, 'text', this.value)" class="w-full border rounded px-1.5 py-0.5 font-bold">
-                        </div>
-                        <div class="md:col-span-1.5">
-                            <label class="block text-[9px] text-slate-400 font-bold">🪙消耗代幣</label>
-                            <input type="number" value="${rule.token}" onchange="updateRuleData(${idx}, 'token', this.value)" class="w-full border rounded px-1.5 py-0.5">
-                        </div>
-                        <div class="md:col-span-1.5">
-                            <label class="block text-[9px] text-slate-400 font-bold">💰消耗金幣</label>
-                            <input type="number" value="${rule.coin}" onchange="updateRuleData(${idx}, 'coin', this.value)" class="w-full border rounded px-1.5 py-0.5">
-                        </div>
-                        <div class="md:col-span-1.5">
-                            <label class="block text-[9px] text-slate-400 font-bold">⚡獲得精力</label>
-                            <input type="number" value="${rule.e}" onchange="updateRuleData(${idx}, 'e', this.value)" class="w-full border rounded px-1.5 py-0.5 text-emerald-600 font-bold">
-                        </div>
-                        <div class="md:col-span-1.5">
-                            <label class="block text-[9px] text-slate-400 font-bold">🧠獲得心態</label>
-                            <input type="number" value="${rule.m}" onchange="updateRuleData(${idx}, 'm', this.value)" class="w-full border rounded px-1.5 py-0.5 text-emerald-600 font-bold">
-                        </div>
-                        <div class="md:col-span-1.5">
-                            <label class="block text-[9px] text-slate-400 font-bold">💰獲得金幣</label>
-                            <input type="number" value="${rule.c}" onchange="updateRuleData(${idx}, 'c', this.value)" class="w-full border rounded px-1.5 py-0.5 text-emerald-600 font-bold">
-                        </div>
-                        <div class="md:col-span-1 text-center">
-                            <button onclick="deleteTradeRule(${idx})" class="text-rose-600 hover:text-rose-900 font-bold">✕</button>
-                        </div>
-                    </div>
-                `;
+            state.config.tradeRules.forEach((r, i) => {
+                container.innerHTML += `<div class="grid grid-cols-12 gap-1 text-[10px] items-center border-b py-1">
+                    <div class="col-span-5"><input value="${r.text}" onchange="state.config.tradeRules[${i}].text=this.value;saveState();renderTradePhase()" class="border w-full"></div>
+                    <div class="col-span-1"><input value="${r.token}" type="number" onchange="state.config.tradeRules[${i}].token=parseInt(this.value);saveState()" class="border w-full text-center"></div>
+                    <div class="col-span-1"><input value="${r.coin}" type="number" onchange="state.config.tradeRules[${i}].coin=parseInt(this.value);saveState()" class="border w-full text-center"></div>
+                    <div class="col-span-1"><input value="${r.e}" type="number" onchange="state.config.tradeRules[${i}].e=parseInt(this.value);saveState()" class="border w-full text-center"></div>
+                    <div class="col-span-1"><input value="${r.m}" type="number" onchange="state.config.tradeRules[${i}].m=parseInt(this.value);saveState()" class="border w-full text-center"></div>
+                    <div class="col-span-1"><input value="${r.c}" type="number" onchange="state.config.tradeRules[${i}].c=parseInt(this.value);saveState()" class="border w-full text-center"></div>
+                    <div class="col-span-2 text-center"><button onclick="state.config.tradeRules.splice(${i},1);saveState();render()" class="text-red-500">刪除</button></div></div>`;
             });
         }
 
         function addNewTradeRule() {
-            state.config.tradeRules.push({
-                id: "rule_" + Date.now(),
-                text: "🔮 消耗 1 行動代幣 ➡️ 換取自訂獎勵",
-                token: 1, coin: 0, e: 0, m: 0, c: 0
-            });
-            saveState();
-            render();
+            state.config.tradeRules.push({id:"r_"+Date.now(), text:"新規則", token:1, coin:0, e:0, m:0, c:0}); saveState(); render();
         }
 
-        function updateRuleData(idx, field, value) {
-            if (field !== 'text') {
-                state.config.tradeRules[idx][field] = parseInt(value) || 0;
-            } else {
-                state.config.tradeRules[idx][field] = value;
-            }
-            saveState();
-            renderTradePhase();
-        }
-
-        function deleteTradeRule(idx) {
-            state.config.tradeRules.splice(idx, 1);
-            saveState();
-            render();
-        }
-
-        // ==========================================
-        // 10. 進階 JSON 設定檔匯出與匯入功能
-        // ==========================================
         function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `兒童體驗營設定檔_年分${state.config.totalYears}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
+            let a = document.createElement('a');
+            a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+            a.download = "camp_config.json"; a.click();
         }
 
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const importedState = JSON.parse(e.target.result);
-                    // 基礎結構檢查防呆
-                    if (importedState.config && importedState.professions && importedState.teams) {
-                        state = importedState;
-                        saveState();
-                        syncAdminInputs();
-                        render();
-                        alert("🎉 營隊設定與進度檔案匯入成功！系統已完美載入。");
-                    } else {
-                        alert("錯誤：此檔案格式與本營隊系統不符，請確認是否為正確的導出 JSON。");
-                    }
-                } catch (err) {
-                    alert("讀取檔案失敗，請確保此檔案為無毀損的純文字 JSON 格式。");
-                }
+        function importData(e) {
+            let reader = new FileReader();
+            reader.onload = function(evt) {
+                try { state = JSON.parse(evt.target.result); saveState(); syncAdminInputs(); render(); alert("匯入成功！"); } 
+                catch(err) { alert("檔案格式錯誤"); }
             };
-            reader.readAsText(file);
+            reader.readAsText(e.target.files[0]);
         }
 
-        // 頁面初次載入啟動
         window.onload = initSystem;
     </script>
 </body>
