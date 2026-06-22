@@ -34,8 +34,12 @@
         <section class="lg:col-span-8 bg-slate-200/50 rounded-2xl shadow-inner border border-slate-300 p-4 flex flex-col h-full overflow-hidden relative">
             <div class="flex justify-between items-end mb-4 border-b border-slate-300 pb-4">
                 <div>
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-widest bg-white px-2 py-1 rounded shadow-sm">當前進度</span>
-                    <h2 id="big-timer-display" class="text-3xl font-black text-slate-900 mt-1">Round 1：第一年 上半年</h2>
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-widest bg-white px-2 py-1 rounded shadow-sm">當前進度 (手動控制)</span>
+                    <div class="flex items-center space-x-3 mt-1">
+                        <button onclick="changeRound(-1)" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition">⬅️ 上一步</button>
+                        <h2 id="big-timer-display" class="text-3xl font-black text-slate-900">Round 1：第一年 上半年</h2>
+                        <button onclick="changeRound(1)" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition">下一步 ➡️</button>
+                    </div>
                 </div>
                 <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex items-center space-x-4">
                     <div class="text-right">
@@ -56,7 +60,7 @@
                     🎲 全組集體命運抽卡
                 </button>
                 <button onclick="advanceRound()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-6 py-3 rounded-xl shadow transition text-sm">
-                    推進至下一回合 ➡️
+                    ✅ 結算並推進回合
                 </button>
             </div>
         </section>
@@ -69,15 +73,15 @@
 
             <div class="flex-1 overflow-y-auto custom-scrollbar p-4">
                 <div id="tab-play" class="space-y-4">
-                    <div class="bg-indigo-50 border border-indigo-200 p-3 rounded-lg text-xs text-indigo-800 font-medium">💡 抽卡結束後，各組若要消耗代幣，請在此區域點擊對應技能結算。</div>
+                    <div class="bg-indigo-50 border border-indigo-200 p-3 rounded-lg text-xs text-indigo-800 font-medium">💡 如果點錯技能，可點擊「撤銷還原」退回消耗的資源。</div>
                     <div id="action-team-list" class="space-y-3"></div>
                 </div>
 
                 <div id="tab-admin" class="hidden space-y-4">
                     <details class="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
-                        <summary class="bg-slate-200/70 p-3 font-bold text-sm text-slate-700 hover:bg-slate-200">1. 回合與基本設定</summary>
+                        <summary class="bg-slate-200/70 p-3 font-bold text-sm text-slate-700 hover:bg-slate-200">1. 全域回合與計時器</summary>
                         <div class="p-4 space-y-3">
-                            <label class="block text-xs font-bold text-slate-600">6 回合自訂名稱 (逗號隔開)</label>
+                            <label class="block text-xs font-bold text-slate-600">6 回合全域顯示名稱 (逗號隔開)</label>
                             <input type="text" id="cfg-rounds" class="w-full border rounded p-1.5 text-xs font-mono" onchange="updateConfig()">
                             <label class="block text-xs font-bold text-slate-600 mt-2">倒數計時器 (秒)</label>
                             <input type="number" id="cfg-timer" class="w-full border rounded p-1.5 text-xs" onchange="updateConfig()">
@@ -100,7 +104,7 @@
                     </details>
 
                     <details class="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden" open>
-                        <summary class="bg-slate-200/70 p-3 font-bold text-sm text-slate-700 hover:bg-slate-200">5. 職業卡池編輯</summary>
+                        <summary class="bg-slate-200/70 p-3 font-bold text-sm text-slate-700 hover:bg-slate-200">5. 職業專屬卡池編輯</summary>
                         <div class="p-4 space-y-4">
                             <div class="flex space-x-2"><input type="text" id="new-profession-name" placeholder="新職業名稱" class="flex-1 border rounded px-2 py-1 text-xs"><button onclick="addNewProfession()" class="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded">建立職業</button></div>
                             <div id="admin-prof-list" class="space-y-4 border-t pt-4"></div>
@@ -150,12 +154,12 @@
                 ]
             },
             teams: [
-                { id: "t1", name: "火箭隊", profession: "工程師", energy: 10, mind: 10, coin: 0, tokens: 2, status: 'normal', actionUsed: false },
-                { id: "t2", name: "夢想家", profession: "藝術家", energy: 10, mind: 10, coin: 0, tokens: 2, status: 'normal', actionUsed: false }
+                { id: "t1", name: "火箭隊", profession: "工程師", energy: 10, mind: 10, coin: 0, tokens: 2, status: 'normal', actionUsed: false, lastAction: null },
+                { id: "t2", name: "夢想家", profession: "藝術家", energy: 10, mind: 10, coin: 0, tokens: 2, status: 'normal', actionUsed: false, lastAction: null }
             ],
             professions: {
-                "工程師": { pools: Array(6).fill().map((_, i) => [{ id: `e_${i}_1`, name: `R${i+1}日常修Bug`, w: 50, text: "平安無事的一天。", e: -1, m: -1, c: 2 }, { id: `e_${i}_2`, name: `R${i+1}系統崩潰`, w: 20, text: "搶修！", e: -4, m: -3, c: 5 }]) },
-                "藝術家": { pools: Array(6).fill().map((_, i) => [{ id: `a_${i}_1`, name: `R${i+1}靈感湧現`, w: 50, text: "完美作品！", e: -2, m: 3, c: 3 }, { id: `a_${i}_2`, name: `R${i+1}遇奧客`, w: 20, text: "改稿...", e: -2, m: -4, c: 1 }]) }
+                "工程師": { roundNames: ["R1日常", "R2危機", "R3升職", "R4挑戰", "R5巔峰", "R6結局"], pools: Array(6).fill().map((_, i) => [{ id: `e_${i}_1`, name: `R${i+1}日常修Bug`, w: 50, text: "平安無事的一天。", e: -1, m: -1, c: 2 }, { id: `e_${i}_2`, name: `R${i+1}系統崩潰`, w: 20, text: "搶修！", e: -4, m: -3, c: 5 }]) },
+                "藝術家": { roundNames: ["R1擺攤", "R2接案", "R3爆紅", "R4低潮", "R5參展", "R6大師"], pools: Array(6).fill().map((_, i) => [{ id: `a_${i}_1`, name: `R${i+1}靈感湧現`, w: 50, text: "完美作品！", e: -2, m: 3, c: 3 }, { id: `a_${i}_2`, name: `R${i+1}遇奧客`, w: 20, text: "改稿...", e: -2, m: -4, c: 1 }]) }
             },
             currentRound: 1, batchResults: null
         };
@@ -176,7 +180,11 @@
 
         function init() {
             try { state = JSON.parse(localStorage.getItem("camp_sim_v3")) || JSON.parse(JSON.stringify(DEFAULT_STATE)); } catch(e) { state = JSON.parse(JSON.stringify(DEFAULT_STATE)); }
-            Object.values(state.professions).forEach(p => { if(!p.pools || p.pools.length !== 6) p.pools = Array(6).fill().map(()=>[]); });
+            // 確保資料結構相容升級
+            Object.values(state.professions).forEach(p => { 
+                if(!p.pools || p.pools.length !== 6) p.pools = Array(6).fill().map(()=>[]); 
+                if(!p.roundNames || p.roundNames.length !== 6) p.roundNames = [...state.config.rounds];
+            });
             timeLeft = state.config.timer; saveState(); syncAdmin(); renderAll();
         }
 
@@ -209,7 +217,7 @@
                         <div><div class="flex justify-between text-[11px] font-bold text-slate-500 mb-1"><span>❤️ 心態</span><span>${t.mind}/10</span></div><div class="h-2.5 bg-slate-200 rounded-full overflow-hidden"><div class="h-full bg-rose-500" style="width: ${Math.min(100, t.mind*10)}%"></div></div></div>
                     </div>
                     ${t.actionUsed && !isHosp ? `<div class="mt-3 text-center text-[10px] bg-slate-100 py-1 rounded font-bold">✓ 本回合已行動</div>` : ''}
-                    <div class="mt-3 border-t pt-2 flex justify-end space-x-1 opacity-50"><button onclick="tweak(${i},'energy',1)" class="px-1 text-[9px] border rounded">🔋+</button><button onclick="tweak(${i},'mind',1)" class="px-1 text-[9px] border rounded">❤️+</button><button onclick="tweak(${i},'coin',1)" class="px-1 text-[9px] border rounded">🪙+</button><button onclick="tweak(${i},'tokens',1)" class="px-1 text-[9px] border rounded">🎟️+</button></div>
+                    <div class="mt-3 border-t pt-2 flex justify-end space-x-1 opacity-50 hover:opacity-100"><button onclick="tweak(${i},'energy',1)" class="px-1 text-[9px] border rounded bg-slate-50">🔋+</button><button onclick="tweak(${i},'mind',1)" class="px-1 text-[9px] border rounded bg-slate-50">❤️+</button><button onclick="tweak(${i},'coin',1)" class="px-1 text-[9px] border rounded bg-slate-50">🪙+</button><button onclick="tweak(${i},'tokens',1)" class="px-1 text-[9px] border rounded bg-slate-50">🎟️+</button></div>
                 </div>`;
             }).join('');
         }
@@ -220,9 +228,9 @@
                 const canAct = !isHosp && !t.actionUsed && t.tokens > 0;
                 let btns = state.config.actions.map(a => {
                     const ok = canAct && t.tokens>=a.tCost && t.coin>=a.cCost && t.energy>=a.eCost && t.mind>=a.mCost;
-                    return `<button onclick="executeAction(${i}, '${a.id}')" ${ok?'':'disabled'} class="text-[10px] font-bold p-1.5 border rounded ${ok?'bg-white':'bg-slate-100 opacity-50'}">${a.name} (-${a.tCost}🎟️)</button>`;
+                    return `<button onclick="executeAction(${i}, '${a.id}')" ${ok?'':'disabled'} class="text-[10px] font-bold p-1.5 border rounded ${ok?'bg-white hover:bg-slate-100 text-slate-700':'bg-slate-100 opacity-50 cursor-not-allowed'}">${a.name} (-${a.tCost}🎟️)</button>`;
                 }).join('');
-                return `<div class="border p-2 rounded bg-slate-50 ${isHosp?'opacity-50 grayscale':''}"><div class="flex justify-between mb-2"><span class="font-bold text-sm">${t.name}</span><span class="text-xs font-bold">${t.tokens} 🎟️</span></div><div class="grid grid-cols-2 gap-1">${isHosp ? '<span class="text-xs text-rose-500 font-bold">🏥 住院休養中</span>' : t.actionUsed ? '<span class="text-xs text-slate-400 font-bold">✓ 已行動</span>' : btns}</div></div>`;
+                return `<div class="border p-2 rounded-xl bg-slate-50 ${isHosp?'opacity-50 grayscale':''}"><div class="flex justify-between items-center mb-2"><span class="font-bold text-sm">${t.name}</span><span class="text-xs font-bold text-indigo-600">${t.tokens} 🎟️</span></div><div class="grid grid-cols-2 gap-1">${isHosp ? '<span class="text-xs text-rose-500 font-bold col-span-2">🏥 住院休養中</span>' : t.actionUsed ? `<div class="col-span-2 flex justify-between items-center bg-slate-200 p-1.5 rounded"><span class="text-xs text-slate-500 font-bold">✓ 已行動</span><button onclick="undoAction(${i})" class="bg-rose-100 hover:bg-rose-200 text-rose-600 px-2 py-1 rounded text-[10px] font-bold">撤銷還原</button></div>` : btns}</div></div>`;
             }).join('');
         }
 
@@ -232,17 +240,19 @@
             if(state.currentRound > 6) return;
             state.batchResults = state.teams.map((t, i) => {
                 if(t.status === 'hospitalized_skipping') return { teamIdx: i, skipped: true, msg: "🏥 住院中，跳過抽卡。" };
-                const pool = state.professions[t.profession]?.pools[state.currentRound-1] || [];
+                const prof = state.professions[t.profession];
+                const pool = prof?.pools[state.currentRound-1] || [];
+                const rName = prof?.roundNames[state.currentRound-1] || state.config.rounds[state.currentRound-1];
                 if(!pool.length) return { teamIdx: i, skipped: true, msg: "⚠️ 無卡池設定！" };
                 let rand = Math.random() * pool.reduce((s, c) => s + (parseInt(c.w)||0), 0);
                 let drawn = pool.find(c => (rand -= (parseInt(c.w)||0)) <= 0) || pool[pool.length-1];
-                return { teamIdx: i, card: drawn };
+                return { teamIdx: i, card: drawn, roundName: rName };
             });
             document.getElementById('batch-modal-round').innerText = state.config.rounds[state.currentRound-1];
             document.getElementById('batch-results-grid').innerHTML = state.batchResults.map(r => {
                 const t = state.teams[r.teamIdx];
-                if(r.skipped) return `<div class="bg-slate-200 p-4 rounded-xl text-center opacity-70"><h4>${t.name}</h4><p class="text-rose-600">${r.msg}</p></div>`;
-                return `<div class="bg-white border p-4 rounded-xl relative"><span class="absolute -top-3 bg-indigo-600 text-white text-[10px] px-2 py-1 rounded">${t.name}</span><h4 class="font-bold mt-2">${r.card.name}</h4><p class="text-xs mb-2">${r.card.text}</p><div class="grid grid-cols-3 text-center border-t pt-2"><div class="text-[10px]">🔋${r.card.e}</div><div class="text-[10px]">❤️${r.card.m}</div><div class="text-[10px]">🪙${r.card.c}</div></div></div>`;
+                if(r.skipped) return `<div class="bg-slate-200 p-4 rounded-xl text-center opacity-70 flex flex-col justify-center"><h4 class="font-bold text-slate-600">${t.name}</h4><p class="text-rose-600 font-bold mt-2">${r.msg}</p></div>`;
+                return `<div class="bg-white border-2 border-indigo-200 p-4 rounded-xl relative"><span class="absolute -top-3 left-4 bg-indigo-600 text-white text-[10px] px-2 py-1 rounded shadow">${t.name} (${r.roundName})</span><h4 class="font-bold mt-3 text-indigo-900 border-b pb-1">${r.card.name}</h4><p class="text-xs my-2 text-slate-600 min-h-[40px]">${r.card.text}</p><div class="grid grid-cols-3 text-center border-t pt-2 gap-1"><div class="bg-slate-50 rounded"><div class="text-[9px] text-slate-400">🔋</div><div class="font-black text-sm ${r.card.e<0?'text-rose-500':'text-emerald-600'}">${r.card.e>0?'+':''}${r.card.e}</div></div><div class="bg-slate-50 rounded"><div class="text-[9px] text-slate-400">❤️</div><div class="font-black text-sm ${r.card.m<0?'text-rose-500':'text-emerald-600'}">${r.card.m>0?'+':''}${r.card.m}</div></div><div class="bg-slate-50 rounded"><div class="text-[9px] text-slate-400">🪙</div><div class="font-black text-sm ${r.card.c<0?'text-rose-500':'text-emerald-600'}">${r.card.c>0?'+':''}${r.card.c}</div></div></div></div>`;
             }).join('');
             document.getElementById('batch-modal').classList.remove('hidden');
         };
@@ -255,7 +265,7 @@
                     checkHospital(t);
                 }
             });
-            document.getElementById('batch-modal').classList.add('hidden'); saveState(); renderAll(); alert("✅ 請開始抉擇計時！");
+            document.getElementById('batch-modal').classList.add('hidden'); saveState(); renderAll(); alert("✅ 數值已套用，請點擊【▶ 開始】進行抉擇計時！");
         };
 
         window.executeAction = function(i, aId) {
@@ -263,7 +273,20 @@
             if(!a || t.actionUsed) return;
             t.tokens -= a.tCost; t.coin -= a.cCost; t.energy -= a.eCost; t.mind -= a.mCost;
             t.tokens += a.tGain; t.coin += a.cGain; t.energy += a.eGain; t.mind += a.mGain;
-            t.actionUsed = true; checkHospital(t); saveState(); renderAll();
+            t.actionUsed = true; t.lastAction = aId; checkHospital(t); saveState(); renderAll();
+        };
+
+        window.undoAction = function(i) {
+            let t = state.teams[i];
+            if(!t.actionUsed) return;
+            if(t.lastAction) {
+                let a = state.config.actions.find(x => x.id === t.lastAction);
+                if(a) {
+                    t.tokens += a.tCost; t.coin += a.cCost; t.energy += a.eCost; t.mind += a.mCost;
+                    t.tokens -= a.tGain; t.coin -= a.cGain; t.energy -= a.eGain; t.mind -= a.mGain;
+                }
+            }
+            t.actionUsed = false; t.lastAction = null; saveState(); renderAll();
         };
 
         function checkHospital(t) {
@@ -273,18 +296,24 @@
             }
         }
 
+        window.changeRound = function(delta) {
+            state.currentRound += delta;
+            if(state.currentRound < 1) state.currentRound = 1;
+            saveState(); renderAll();
+        };
+
         window.advanceRound = function() {
-            if(!confirm(`結算並進入下一回？`)) return;
+            if(!confirm(`確定要結算並進入下一回嗎？`)) return;
             state.teams.forEach(t => {
                 if (t.status === 'hospitalized_new') t.status = 'hospitalized_skipping';
                 else if (t.status === 'hospitalized_skipping') {
                     t.status = 'normal'; t.energy = 5; t.mind = 5; t.coin -= 2;
                     alert(`🏥 【${t.name}】出院！扣2金幣。` + (Math.random()<0.5 ? (Math.random()<0.5 ? (t.tokens++,"✨ 獲代幣+1") : (t.mind=10,"✨ 獲心態回滿")) : ""));
                 }
-                t.actionUsed = false;
+                t.actionUsed = false; t.lastAction = null;
             });
             state.currentRound++;
-            if([3,5].includes(state.currentRound)) { state.teams.forEach(t => { if(t.status==='normal') t.tokens = 2; }); alert("🎉 行動代幣重置為 2！"); }
+            if([3,5].includes(state.currentRound)) { state.teams.forEach(t => { if(t.status==='normal') t.tokens = 2; }); alert("🎉 行動代幣已重置為 2 枚！"); }
             timer.reset(); saveState(); renderAll();
         };
 
@@ -305,36 +334,11 @@
             document.getElementById('admin-titles-list').innerHTML = state.config.titles.map((r,i) => `<div class="flex space-x-1 text-[9px] mb-1"><input value="${r.name}" onchange="state.config.titles[${i}].name=this.value;saveState()" class="border p-1 w-1/4"><input value="${r.minC||''}" placeholder="C>=" onchange="state.config.titles[${i}].minC=parseInt(this.value)||null;saveState()" class="border p-1 w-1/8"><input value="${r.maxE||''}" placeholder="E<=" onchange="state.config.titles[${i}].maxE=parseInt(this.value)||null;saveState()" class="border p-1 w-1/8"><button onclick="state.config.titles.splice(${i},1);saveState();syncAdmin()" class="text-rose-500 px-1">刪</button></div>`).join('');
             document.getElementById('admin-team-list').innerHTML = state.teams.map((t,i) => `<div class="flex space-x-1 mb-1 text-xs"><input value="${t.name}" onchange="state.teams[${i}].name=this.value;saveState();renderAll()" class="border p-1 flex-1"><select onchange="state.teams[${i}].profession=this.value;saveState();renderAll()" class="border p-1 flex-1">${Object.keys(state.professions).map(p=>`<option ${t.profession===p?'selected':''}>${p}</option>`).join('')}</select><button onclick="state.teams.splice(${i},1);saveState();syncAdmin();renderAll()" class="text-rose-500">刪</button></div>`).join('');
             
-            // 全新渲染的主動抉擇技能設定 UI
             document.getElementById('admin-action-list').innerHTML = state.config.actions.map((a,i) => `
                 <div class="bg-white border rounded-xl p-3 text-xs mb-3 shadow-sm">
-                    <div class="flex justify-between items-center mb-2 border-b pb-2">
-                        <input value="${a.name}" onchange="state.config.actions[${i}].name=this.value;saveState();renderActionTab()" class="border p-1 w-2/3 font-bold text-indigo-700 rounded" placeholder="技能名稱">
-                        <button onclick="state.config.actions.splice(${i},1);saveState();syncAdmin();renderActionTab()" class="bg-rose-100 hover:bg-rose-200 text-rose-600 px-2 py-1 rounded font-bold">刪除</button>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="bg-rose-50 p-2 rounded">
-                            <div class="font-bold text-[10px] text-rose-700 mb-1 text-center border-b border-rose-200 pb-1">⚠️ 點擊消耗 (Cost)</div>
-                            <div class="grid grid-cols-4 gap-1 text-[10px] text-center">
-                                <div>🎟️<input value="${a.tCost}" type="number" onchange="state.config.actions[${i}].tCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div>
-                                <div>🪙<input value="${a.cCost}" type="number" onchange="state.config.actions[${i}].cCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div>
-                                <div>🔋<input value="${a.eCost}" type="number" onchange="state.config.actions[${i}].eCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div>
-                                <div>❤️<input value="${a.mCost}" type="number" onchange="state.config.actions[${i}].mCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div>
-                            </div>
-                        </div>
-                        <div class="bg-emerald-50 p-2 rounded">
-                            <div class="font-bold text-[10px] text-emerald-700 mb-1 text-center border-b border-emerald-200 pb-1">🎁 執行獲得 (Gain)</div>
-                            <div class="grid grid-cols-4 gap-1 text-[10px] text-center">
-                                <div>🎟️<input value="${a.tGain}" type="number" onchange="state.config.actions[${i}].tGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div>
-                                <div>🪙<input value="${a.cGain}" type="number" onchange="state.config.actions[${i}].cGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div>
-                                <div>🔋<input value="${a.eGain}" type="number" onchange="state.config.actions[${i}].eGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div>
-                                <div>❤️<input value="${a.mGain}" type="number" onchange="state.config.actions[${i}].mGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    <div class="flex justify-between items-center mb-2 border-b pb-2"><input value="${a.name}" onchange="state.config.actions[${i}].name=this.value;saveState();renderActionTab()" class="border p-1 w-2/3 font-bold text-indigo-700 rounded" placeholder="技能名稱"><button onclick="state.config.actions.splice(${i},1);saveState();syncAdmin();renderActionTab()" class="bg-rose-100 text-rose-600 px-2 py-1 rounded font-bold">刪除</button></div>
+                    <div class="grid grid-cols-2 gap-2"><div class="bg-rose-50 p-2 rounded"><div class="font-bold text-[10px] text-rose-700 mb-1 text-center border-b border-rose-200 pb-1">⚠️ 點擊消耗 (Cost)</div><div class="grid grid-cols-4 gap-1 text-[10px] text-center"><div>🎟️<input value="${a.tCost}" type="number" onchange="state.config.actions[${i}].tCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div><div>🪙<input value="${a.cCost}" type="number" onchange="state.config.actions[${i}].cCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div><div>🔋<input value="${a.eCost}" type="number" onchange="state.config.actions[${i}].eCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div><div>❤️<input value="${a.mCost}" type="number" onchange="state.config.actions[${i}].mCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div></div></div><div class="bg-emerald-50 p-2 rounded"><div class="font-bold text-[10px] text-emerald-700 mb-1 text-center border-b border-emerald-200 pb-1">🎁 執行獲得 (Gain)</div><div class="grid grid-cols-4 gap-1 text-[10px] text-center"><div>🎟️<input value="${a.tGain}" type="number" onchange="state.config.actions[${i}].tGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div><div>🪙<input value="${a.cGain}" type="number" onchange="state.config.actions[${i}].cGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div><div>🔋<input value="${a.eGain}" type="number" onchange="state.config.actions[${i}].eGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div><div>❤️<input value="${a.mGain}" type="number" onchange="state.config.actions[${i}].mGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div></div></div></div></div>
             `).join('');
-            
             renderAdminProfessions();
         };
 
@@ -342,45 +346,46 @@
         window.addNewTitle = function() { state.config.titles.push({name:"新稱號", minC:null,maxC:null,minE:null,maxE:null,minM:null,maxM:null}); saveState(); syncAdmin(); };
         window.addNewTeam = function() { state.teams.push({id:"t_"+Date.now(), name:"新隊伍", profession:Object.keys(state.professions)[0], energy:10, mind:10, coin:0, tokens:2, status:'normal', actionUsed:false}); saveState(); syncAdmin(); renderAll(); };
         window.addNewAction = function() { state.config.actions.push({id:"a_"+Date.now(), name:"新技能", tCost:1, cCost:0, eCost:0, mCost:0, tGain:0, cGain:0, eGain:0, mGain:0}); saveState(); syncAdmin(); };
-        window.addNewProfession = function() { let n=document.getElementById("new-profession-name").value; if(n&&!state.professions[n]){state.professions[n]={pools:Array(6).fill().map(()=>[])};document.getElementById("new-profession-name").value="";saveState();syncAdmin();} };
+        window.addNewProfession = function() { let n=document.getElementById("new-profession-name").value; if(n&&!state.professions[n]){state.professions[n]={roundNames:[...state.config.rounds], pools:Array(6).fill().map(()=>[])};document.getElementById("new-profession-name").value="";saveState();syncAdmin();} };
         
-        // 全新渲染的雙層折疊職業卡池 UI
         window.renderAdminProfessions = function() {
+            // 防折疊機制：記錄當前打開的面版
+            const profOpen = {}; const roundOpen = {};
+            document.querySelectorAll('.prof-details').forEach(el => profOpen[el.dataset.id] = el.open);
+            document.querySelectorAll('.round-details').forEach(el => roundOpen[el.dataset.id] = el.open);
+
             document.getElementById('admin-prof-list').innerHTML = Object.keys(state.professions).map(pName => `
-                <details class="border-2 border-indigo-100 rounded-xl bg-indigo-50/30 mb-2 overflow-hidden">
+                <details class="prof-details border-2 border-indigo-100 rounded-xl bg-indigo-50/30 mb-2 overflow-hidden" data-id="${pName}" ${profOpen[pName]?'open':''}>
                     <summary class="flex justify-between font-black text-indigo-900 p-3 bg-indigo-100/50 cursor-pointer hover:bg-indigo-200/50 transition">
                         <span>💼 職業：${pName}</span>
                         <button onclick="event.preventDefault(); if(confirm('確定刪除此職業？')) { delete state.professions['${pName}']; saveState(); syncAdmin(); }" class="text-rose-600 text-xs bg-white border px-2 py-1 rounded shadow-sm hover:bg-rose-50">刪除職業</button>
                     </summary>
                     <div class="p-3 space-y-3">
                         ${state.professions[pName].pools.map((pool, rIdx) => `
-                            <details class="bg-white border rounded shadow-sm overflow-hidden">
+                            <details class="round-details bg-white border rounded shadow-sm overflow-hidden" data-id="${pName}_${rIdx}" ${roundOpen[pName+'_'+rIdx]?'open':''}>
                                 <summary class="text-xs font-bold bg-slate-100 p-2 cursor-pointer hover:bg-slate-200 flex justify-between items-center transition">
-                                    <span>📌 ${state.config.rounds[rIdx] || `回合 ${rIdx+1}`} 卡池 (${pool.length}張)</span>
-                                    <button onclick="event.preventDefault(); state.professions['${pName}'].pools[${rIdx}].push({name:'新卡',w:10,text:'',e:0,m:0,c:0}); saveState(); syncAdmin();" class="text-indigo-600 bg-indigo-50 px-2 py-1 rounded shadow-sm">+ 新增卡片</button>
+                                    <div class="flex items-center space-x-2 w-1/2">
+                                        <span class="text-slate-400">📌 R${rIdx+1} </span>
+                                        <input value="${state.professions[pName].roundNames[rIdx]}" onchange="state.professions['${pName}'].roundNames[${rIdx}]=this.value;saveState()" onclick="event.stopPropagation()" class="border-b border-slate-300 bg-transparent px-1 flex-1 focus:bg-white font-bold text-indigo-700" placeholder="自訂名稱">
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-slate-500">(${pool.length}張)</span>
+                                        <button onclick="event.preventDefault(); state.professions['${pName}'].pools[${rIdx}].push({name:'新卡',w:10,text:'',e:0,m:0,c:0}); saveState(); syncAdmin();" class="text-indigo-600 bg-indigo-50 px-2 py-1 rounded shadow-sm">+ 新增卡片</button>
+                                    </div>
                                 </summary>
                                 <div class="p-2 space-y-2">
                                     <div class="grid grid-cols-12 gap-1 text-[10px] font-bold text-slate-500 bg-slate-50 p-1 text-center rounded">
-                                        <div class="col-span-2 text-left">卡名</div>
-                                        <div class="col-span-1">權重</div>
-                                        <div class="col-span-3 text-left">事件敘述</div>
-                                        <div class="col-span-1">🔋</div>
-                                        <div class="col-span-1">❤️</div>
-                                        <div class="col-span-1">🪙</div>
-                                        <div class="col-span-3">操作</div>
+                                        <div class="col-span-2 text-left">卡名</div><div class="col-span-1">權重</div><div class="col-span-3 text-left">事件敘述</div><div class="col-span-1">🔋</div><div class="col-span-1">❤️</div><div class="col-span-1">🪙</div><div class="col-span-3">操作</div>
                                     </div>
-                                    ${pool.length === 0 ? '<div class="text-center text-[10px] py-2 text-slate-400">尚無卡片，點擊右上方新增</div>' : ''}
                                     ${pool.map((c, i) => `
                                         <div class="grid grid-cols-12 gap-1 text-[10px] items-center border-b pb-1">
-                                            <div class="col-span-2"><input value="${c.name||''}" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].name=this.value;saveState()" class="border w-full p-1 rounded placeholder-slate-400" placeholder="卡名"></div>
+                                            <div class="col-span-2"><input value="${c.name||''}" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].name=this.value;saveState()" class="border w-full p-1 rounded" placeholder="卡名"></div>
                                             <div class="col-span-1"><input value="${c.w}" type="number" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].w=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center"></div>
-                                            <div class="col-span-3"><input value="${c.text||''}" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].text=this.value;saveState()" class="border w-full p-1 rounded placeholder-slate-400" placeholder="敘述"></div>
+                                            <div class="col-span-3"><input value="${c.text||''}" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].text=this.value;saveState()" class="border w-full p-1 rounded" placeholder="敘述"></div>
                                             <div class="col-span-1 text-emerald-600"><input value="${c.e}" type="number" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].e=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div>
                                             <div class="col-span-1 text-rose-600"><input value="${c.m}" type="number" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].m=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div>
                                             <div class="col-span-1 text-amber-600"><input value="${c.c}" type="number" onchange="state.professions['${pName}'].pools[${rIdx}][${i}].c=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div>
-                                            <div class="col-span-3 text-center flex justify-center space-x-1">
-                                                <button onclick="state.professions['${pName}'].pools[${rIdx}].splice(${i},1);saveState();syncAdmin()" class="bg-rose-100 hover:bg-rose-200 text-rose-600 px-2 py-1 rounded font-bold transition text-[9px]">刪除</button>
-                                            </div>
+                                            <div class="col-span-3 text-center flex justify-center space-x-1"><button onclick="state.professions['${pName}'].pools[${rIdx}].splice(${i},1);saveState();syncAdmin()" class="bg-rose-100 text-rose-600 px-2 py-1 rounded font-bold text-[9px]">刪除</button></div>
                                         </div>
                                     `).join('')}
                                 </div>
