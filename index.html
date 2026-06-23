@@ -31,6 +31,7 @@
 
     <main class="flex-1 max-w-[1800px] w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-80px)] overflow-hidden">
         
+        <!-- 左側：主看板 -->
         <section class="lg:col-span-8 bg-slate-200/50 rounded-2xl shadow-inner border border-slate-300 p-4 flex flex-col h-full overflow-hidden relative">
             <div class="flex justify-between items-end mb-4 border-b border-slate-300 pb-4">
                 <div>
@@ -69,6 +70,7 @@
             </div>
         </section>
 
+        <!-- 右側：設定與操作區 -->
         <section class="lg:col-span-4 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full overflow-hidden">
             <div class="flex space-x-1 p-2 bg-slate-100 border-b border-slate-200">
                 <button id="tab-play-btn" onclick="switchTab('play')" class="flex-1 py-2 rounded font-bold text-sm bg-white shadow text-indigo-700 transition">🎮 手動操作區</button>
@@ -110,7 +112,7 @@
                         <div class="p-4"><div id="admin-team-list" class="space-y-2"></div><button onclick="commit(); addNewTeam()" class="w-full mt-3 bg-indigo-100 text-indigo-700 text-xs font-bold py-1.5 rounded">+ 新增隊伍</button></div>
                     </details>
 
-                    <details class="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
+                    <details class="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden" open>
                         <summary class="bg-slate-200/70 p-3 font-bold text-sm text-slate-700 hover:bg-slate-200">4. 主動抉擇技能設定</summary>
                         <div class="p-4"><div id="admin-action-list" class="space-y-3"></div><button onclick="commit(); addNewAction()" class="w-full mt-3 bg-indigo-100 text-indigo-700 text-xs font-bold py-1.5 rounded">+ 新增技能</button></div>
                     </details>
@@ -133,6 +135,7 @@
         </section>
     </main>
 
+    <!-- Modal 視窗 -->
     <div id="batch-modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-2xl w-full max-w-5xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <div class="bg-slate-900 p-4 text-white text-center relative"><h3 class="text-2xl font-black text-amber-400">🔮 命運結算報告</h3><p class="text-xs text-slate-400 mt-1" id="batch-modal-round"></p></div>
@@ -188,6 +191,42 @@
         let timerInterval = null;
         let timeLeft = 0;
 
+        // 【資料自動修復核心】確保舊存檔缺失的屬性全部補齊，防止 Map 或 Push 等 Undefined 錯誤
+        function sanitizeState(st) {
+            if (!st) return JSON.parse(JSON.stringify(DEFAULT_STATE));
+            if (!st.config) st.config = DEFAULT_STATE.config;
+            if (!st.teams) st.teams = DEFAULT_STATE.teams;
+            if (!st.professions) st.professions = DEFAULT_STATE.professions;
+            
+            if (!st.config.globalProfession) st.config.globalProfession = Object.keys(st.professions)[0] || "工程師";
+            st.teams.forEach(t => { if (t.r6Choice === undefined) t.r6Choice = 0; });
+            
+            Object.keys(st.professions).forEach(pName => { 
+                let p = st.professions[pName];
+                if (!p.pools) p.pools = Array(5).fill().map(() => []); 
+                if (!p.roundNames) p.roundNames = ["R1", "R2", "R3", "R4", "R5", "R6結局"];
+                if (p.pools.length === 6) {
+                    p.r6Branches = [{ name: "預設單一路線", cards: p.pools[5] || [] }];
+                    p.pools.pop();
+                }
+                if (!p.r6Branches) p.r6Branches = [{ name: "預設單一路線", cards: [] }];
+                p.r6Branches.forEach(b => { if (!b.cards) b.cards = []; });
+            });
+
+            if(st.config.titles) {
+                st.config.titles.forEach(t => {
+                    if (t.cOp === undefined) {
+                        t.cOp = t.minC != null ? ">=" : ""; t.cVal = t.minC != null ? t.minC : "";
+                        t.eOp = t.minE != null ? ">=" : ""; t.eVal = t.minE != null ? t.minE : "";
+                        t.mOp = t.minM != null ? ">=" : ""; t.mVal = t.minM != null ? t.minM : "";
+                    }
+                });
+            } else {
+                st.config.titles = DEFAULT_STATE.config.titles;
+            }
+            return st;
+        }
+
         window.commit = function() {
             pastStates.push(JSON.stringify(state));
             if(pastStates.length > 50) pastStates.shift();
@@ -197,14 +236,14 @@
         window.undo = function() {
             if(pastStates.length === 0) return;
             futureStates.push(JSON.stringify(state));
-            state = JSON.parse(pastStates.pop());
+            state = sanitizeState(JSON.parse(pastStates.pop()));
             saveState(); syncAdmin(); renderAll();
         };
 
         window.redo = function() {
             if(futureStates.length === 0) return;
             pastStates.push(JSON.stringify(state));
-            state = JSON.parse(futureStates.pop());
+            state = sanitizeState(JSON.parse(futureStates.pop()));
             saveState(); syncAdmin(); renderAll();
         };
 
@@ -218,37 +257,11 @@
             updateStr: () => { document.getElementById('countdown-display').innerText = `${Math.floor(timeLeft/60).toString().padStart(2,'0')}:${(timeLeft%60).toString().padStart(2,'0')}`; }
         };
 
-        // 資料升級與相容性處理
         function init() {
-            try { state = JSON.parse(localStorage.getItem("camp_sim_v3")) || JSON.parse(JSON.stringify(DEFAULT_STATE)); } catch(e) { state = JSON.parse(JSON.stringify(DEFAULT_STATE)); }
+            try { state = sanitizeState(JSON.parse(localStorage.getItem("camp_sim_v3")) || JSON.parse(JSON.stringify(DEFAULT_STATE))); } catch(e) { state = sanitizeState(JSON.parse(JSON.stringify(DEFAULT_STATE))); }
             try { pastStates = JSON.parse(localStorage.getItem("camp_sim_past")) || []; } catch(e) { pastStates = []; }
             try { futureStates = JSON.parse(localStorage.getItem("camp_sim_future")) || []; } catch(e) { futureStates = []; }
             
-            // 系統升級檢測
-            if(!state.config.globalProfession) state.config.globalProfession = Object.keys(state.professions)[0] || "工程師";
-            state.teams.forEach(t => { if(t.r6Choice === undefined) t.r6Choice = 0; });
-            
-            Object.keys(state.professions).forEach(pName => { 
-                let p = state.professions[pName];
-                if(!p.pools) p.pools = Array(5).fill().map(()=>[]); 
-                if(!p.roundNames) p.roundNames = ["R1", "R2", "R3", "R4", "R5", "R6"];
-                // 升級 R6
-                if(p.pools.length === 6) {
-                    p.r6Branches = [{ name: "預設單一路線", cards: p.pools[5] }];
-                    p.pools.pop();
-                }
-                if(!p.r6Branches) p.r6Branches = [{ name: "預設單一路線", cards: [] }];
-            });
-
-            // 升級稱號系統
-            state.config.titles.forEach(t => {
-                if(t.cOp === undefined) {
-                    t.cOp = t.minC != null ? ">=" : ""; t.cVal = t.minC || "";
-                    t.eOp = t.minE != null ? ">=" : ""; t.eVal = t.minE || "";
-                    t.mOp = t.minM != null ? ">=" : ""; t.mVal = t.minM || "";
-                }
-            });
-
             timeLeft = state.config.timer; saveState(); syncAdmin(); renderAll();
         }
 
@@ -303,7 +316,7 @@
                         <div class="mt-3 p-2 bg-purple-50 border border-purple-200 rounded-lg">
                             <span class="text-[10px] font-bold text-purple-800 mb-1 block">📌 第六回合 結局分歧選擇</span>
                             <select onchange="commit(); state.teams[${i}].r6Choice=parseInt(this.value); saveState();" class="w-full text-xs font-bold text-purple-900 border border-purple-300 rounded p-1 bg-white">
-                                ${prof.r6Branches.map((b, bIdx) => `<option value="${bIdx}" ${t.r6Choice===bIdx?'selected':''}>${b.name}</option>`).join('')}
+                                ${(prof.r6Branches || []).map((b, bIdx) => `<option value="${bIdx}" ${t.r6Choice===bIdx?'selected':''}>${b.name}</option>`).join('')}
                             </select>
                         </div>
                     ` : ''}
@@ -347,8 +360,8 @@
                 if(state.currentRound <= 5) {
                     pool = prof.pools[state.currentRound-1] || [];
                 } else {
-                    const branch = prof.r6Branches[t.r6Choice || 0];
-                    if(branch) { pool = branch.cards; rName += ` (${branch.name})`; }
+                    const branch = (prof.r6Branches || [])[t.r6Choice || 0];
+                    if(branch) { pool = branch.cards || []; rName += ` (${branch.name})`; }
                 }
 
                 if(!pool.length) return { teamIdx: i, skipped: true, msg: "⚠️ 無卡池設定！" };
@@ -484,15 +497,15 @@
 
             document.getElementById('admin-prof-list').innerHTML = Object.keys(state.professions).map(pName => {
                 const prof = state.professions[pName];
-                let r1_r5_html = prof.pools.map((pool, rIdx) => `
+                let r1_r5_html = (prof.pools || []).map((pool, rIdx) => `
                     <details class="round-details bg-white border rounded shadow-sm overflow-hidden" data-id="${pName}_${rIdx}" ${roundOpen[pName+'_'+rIdx]?'open':''}>
                         <summary class="text-xs font-bold bg-slate-100 p-2 cursor-pointer hover:bg-slate-200 flex justify-between items-center transition">
                             <div class="flex items-center space-x-2 w-1/2"><span class="text-slate-400">📌 R${rIdx+1} </span><input value="${prof.roundNames[rIdx]}" onchange="commit(); state.professions['${pName}'].roundNames[${rIdx}]=this.value;saveState();renderAll();" onclick="event.stopPropagation()" class="border-b border-slate-300 bg-transparent px-1 flex-1 focus:bg-white font-bold text-indigo-700" placeholder="自訂回合名稱"></div>
-                            <div class="flex items-center space-x-2"><span class="text-slate-500">(${pool.length}張)</span><button onclick="event.preventDefault(); commit(); state.professions['${pName}'].pools[${rIdx}].push({name:'新卡',w:10,text:'',e:0,m:0,c:0}); saveState(); syncAdmin();" class="text-indigo-600 bg-indigo-50 px-2 py-1 rounded shadow-sm">+ 新增卡片</button></div>
+                            <div class="flex items-center space-x-2"><span class="text-slate-500">(${(pool||[]).length}張)</span><button onclick="event.preventDefault(); commit(); state.professions['${pName}'].pools[${rIdx}].push({name:'新卡',w:10,text:'',e:0,m:0,c:0}); saveState(); syncAdmin();" class="text-indigo-600 bg-indigo-50 px-2 py-1 rounded shadow-sm">+ 新增卡片</button></div>
                         </summary>
                         <div class="p-2 space-y-2">
                             <div class="grid grid-cols-12 gap-1 text-[10px] font-bold text-slate-500 bg-slate-50 p-1 text-center rounded"><div class="col-span-2 text-left">卡名</div><div class="col-span-1">權重</div><div class="col-span-3 text-left">事件敘述</div><div class="col-span-1">🔋</div><div class="col-span-1">❤️</div><div class="col-span-1">🪙</div><div class="col-span-3">操作</div></div>
-                            ${pool.map((c, i) => `<div class="grid grid-cols-12 gap-1 text-[10px] items-center border-b pb-1"><div class="col-span-2"><input value="${c.name||''}" onchange="commit(); state.professions['${pName}'].pools[${rIdx}][${i}].name=this.value;saveState()" class="border w-full p-1 rounded" placeholder="卡名"></div><div class="col-span-1"><input value="${c.w}" type="number" onchange="commit(); state.professions['${pName}'].pools[${rIdx}][${i}].w=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center"></div><div class="col-span-3"><input value="${c.text||''}" onchange="commit(); state.professions['${pName}'].pools[${rIdx}][${i}].text=this.value;saveState()" class="border w-full p-1 rounded" placeholder="敘述"></div><div class="col-span-1 text-emerald-600"><input value="${c.e}" type="number" onchange="commit(); state.professions['${pName}'].pools[${rIdx}][${i}].e=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div><div class="col-span-1 text-rose-600"><input value="${c.m}" type="number" onchange="commit(); state.professions['${pName}'].pools[${rIdx}][${i}].m=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div><div class="col-span-1 text-amber-600"><input value="${c.c}" type="number" onchange="commit(); state.professions['${pName}'].pools[${rIdx}][${i}].c=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div><div class="col-span-3 text-center flex justify-center"><button onclick="commit(); state.professions['${pName}'].pools[${rIdx}].splice(${i},1);saveState();syncAdmin()" class="bg-rose-100 text-rose-600 px-2 py-1 rounded font-bold text-[9px]">刪除</button></div></div>`).join('')}
+                            ${(pool||[]).map((c, i) => `<div class="grid grid-cols-12 gap-1 text-[10px] items-center border-b pb-1"><div class="col-span-2"><input value="${c.name||''}" onchange="commit(); state.professions['${pName}'].pools[${rIdx}][${i}].name=this.value;saveState()" class="border w-full p-1 rounded" placeholder="卡名"></div><div class="col-span-1"><input value="${c.w}" type="number" onchange="commit(); state.professions['${pName}'].pools[${rIdx}][${i}].w=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center"></div><div class="col-span-3"><input value="${c.text||''}" onchange="commit(); state.professions['${pName}'].pools[${rIdx}][${i}].text=this.value;saveState()" class="border w-full p-1 rounded" placeholder="敘述"></div><div class="col-span-1 text-emerald-600"><input value="${c.e}" type="number" onchange="commit(); state.professions['${pName}'].pools[${rIdx}][${i}].e=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div><div class="col-span-1 text-rose-600"><input value="${c.m}" type="number" onchange="commit(); state.professions['${pName}'].pools[${rIdx}][${i}].m=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div><div class="col-span-1 text-amber-600"><input value="${c.c}" type="number" onchange="commit(); state.professions['${pName}'].pools[${rIdx}][${i}].c=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div><div class="col-span-3 text-center flex justify-center"><button onclick="commit(); state.professions['${pName}'].pools[${rIdx}].splice(${i},1);saveState();syncAdmin()" class="bg-rose-100 text-rose-600 px-2 py-1 rounded font-bold text-[9px]">刪除</button></div></div>`).join('')}
                         </div>
                     </details>
                 `).join('');
@@ -504,15 +517,15 @@
                             <button onclick="event.preventDefault(); commit(); state.professions['${pName}'].r6Branches.push({name:'新選擇路線',cards:[]}); saveState(); syncAdmin();" class="bg-purple-600 text-white px-2 py-1 rounded shadow-sm">+ 新增選擇路線</button>
                         </summary>
                         <div class="p-2 space-y-3">
-                            ${prof.r6Branches.map((b, bIdx) => `
+                            ${(prof.r6Branches || []).map((b, bIdx) => `
                                 <div class="border border-purple-200 bg-white p-2 rounded">
                                     <div class="flex justify-between items-center mb-2 pb-2 border-b border-slate-100">
                                         <div class="flex items-center space-x-2"><span class="font-bold text-[10px] text-purple-700">路線名稱：</span><input value="${b.name}" onchange="commit(); state.professions['${pName}'].r6Branches[${bIdx}].name=this.value;saveState();renderAll();" class="border border-purple-300 p-1 text-[11px] rounded w-48 font-bold text-purple-900"></div>
                                         <div class="flex space-x-2"><button onclick="commit(); state.professions['${pName}'].r6Branches[${bIdx}].cards.push({name:'新結局卡',w:10,text:'',e:0,m:0,c:0}); saveState(); syncAdmin();" class="text-indigo-600 bg-indigo-50 px-2 py-1 rounded text-[9px] font-bold">+ 新增此路線卡片</button><button onclick="if(confirm('刪除整條路線？')){commit(); state.professions['${pName}'].r6Branches.splice(${bIdx},1); saveState(); syncAdmin();}" class="text-rose-600 bg-rose-50 px-2 py-1 rounded text-[9px] font-bold">刪除路線</button></div>
                                     </div>
                                     <div class="grid grid-cols-12 gap-1 text-[10px] font-bold text-slate-400 bg-slate-50 p-1 text-center rounded"><div class="col-span-2 text-left">結局卡名</div><div class="col-span-1">權重</div><div class="col-span-3 text-left">事件敘述</div><div class="col-span-1">🔋</div><div class="col-span-1">❤️</div><div class="col-span-1">🪙</div><div class="col-span-3">操作</div></div>
-                                    ${b.cards.length===0?'<div class="text-[10px] text-center text-slate-400 py-1">尚無卡片</div>':''}
-                                    ${b.cards.map((c, i) => `<div class="grid grid-cols-12 gap-1 text-[10px] items-center border-b pb-1 mt-1"><div class="col-span-2"><input value="${c.name||''}" onchange="commit(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].name=this.value;saveState()" class="border w-full p-1 rounded" placeholder="卡名"></div><div class="col-span-1"><input value="${c.w}" type="number" onchange="commit(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].w=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center"></div><div class="col-span-3"><input value="${c.text||''}" onchange="commit(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].text=this.value;saveState()" class="border w-full p-1 rounded" placeholder="敘述"></div><div class="col-span-1 text-emerald-600"><input value="${c.e}" type="number" onchange="commit(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].e=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div><div class="col-span-1 text-rose-600"><input value="${c.m}" type="number" onchange="commit(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].m=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div><div class="col-span-1 text-amber-600"><input value="${c.c}" type="number" onchange="commit(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].c=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div><div class="col-span-3 text-center flex justify-center"><button onclick="commit(); state.professions['${pName}'].r6Branches[${bIdx}].cards.splice(${i},1);saveState();syncAdmin()" class="bg-rose-100 text-rose-600 px-2 py-1 rounded font-bold text-[9px]">刪除</button></div></div>`).join('')}
+                                    ${(b.cards||[]).length===0?'<div class="text-[10px] text-center text-slate-400 py-1">尚無卡片</div>':''}
+                                    ${(b.cards||[]).map((c, i) => `<div class="grid grid-cols-12 gap-1 text-[10px] items-center border-b pb-1 mt-1"><div class="col-span-2"><input value="${c.name||''}" onchange="commit(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].name=this.value;saveState()" class="border w-full p-1 rounded" placeholder="卡名"></div><div class="col-span-1"><input value="${c.w}" type="number" onchange="commit(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].w=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center"></div><div class="col-span-3"><input value="${c.text||''}" onchange="commit(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].text=this.value;saveState()" class="border w-full p-1 rounded" placeholder="敘述"></div><div class="col-span-1 text-emerald-600"><input value="${c.e}" type="number" onchange="commit(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].e=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div><div class="col-span-1 text-rose-600"><input value="${c.m}" type="number" onchange="commit(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].m=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div><div class="col-span-1 text-amber-600"><input value="${c.c}" type="number" onchange="commit(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].c=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div><div class="col-span-3 text-center flex justify-center"><button onclick="commit(); state.professions['${pName}'].r6Branches[${bIdx}].cards.splice(${i},1);saveState();syncAdmin()" class="bg-rose-100 text-rose-600 px-2 py-1 rounded font-bold text-[9px]">刪除</button></div></div>`).join('')}
                                 </div>
                             `).join('')}
                         </div>
@@ -533,7 +546,7 @@
         };
 
         window.exportData = function() { let a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state)); a.download = "camp.json"; a.click(); };
-        window.importData = function(e) { let r = new FileReader(); r.onload=(evt)=>{try{state=JSON.parse(evt.target.result);saveState();location.reload();}catch(err){alert("錯誤");}}; r.readAsText(e.target.files[0]); };
+        window.importData = function(e) { let r = new FileReader(); r.onload=(evt)=>{try{state=sanitizeState(JSON.parse(evt.target.result));saveState();location.reload();}catch(err){alert("錯誤");}}; r.readAsText(e.target.files[0]); };
 
         window.onload = init;
     </script>
