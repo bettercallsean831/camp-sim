@@ -31,6 +31,7 @@
 
     <main class="flex-1 max-w-[1800px] w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-80px)] overflow-hidden">
         
+        <!-- 左側：主看板 -->
         <section class="lg:col-span-8 bg-slate-200/50 rounded-2xl shadow-inner border border-slate-300 p-4 flex flex-col h-full overflow-hidden relative">
             <div class="flex justify-between items-end mb-4 border-b border-slate-300 pb-4 shrink-0">
                 <div>
@@ -57,7 +58,8 @@
                 </div>
             </div>
 
-            <div id="leaderboard-grid" class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 custom-scrollbar pb-20"></div>
+            <!-- 加入了 content-start items-start 防止卡片垂直拉伸 -->
+            <div id="leaderboard-grid" class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 content-start items-start custom-scrollbar pb-20"></div>
             
             <div class="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur border-t border-slate-300 p-4 flex justify-between items-center shadow-lg">
                 <button id="btn-batch-draw" onclick="executeBatchDraw()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-lg px-8 py-3 rounded-xl shadow-md transition transform hover:scale-105">
@@ -69,6 +71,7 @@
             </div>
         </section>
 
+        <!-- 右側：設定與操作區 -->
         <section class="lg:col-span-4 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full overflow-hidden">
             <div class="flex space-x-1 p-2 bg-slate-100 border-b border-slate-200 shrink-0">
                 <button id="tab-play-btn" onclick="switchTab('play')" class="flex-1 py-2 rounded font-bold text-sm bg-white shadow text-indigo-700 transition">🎮 手動操作區</button>
@@ -76,6 +79,7 @@
             </div>
 
             <div class="flex-1 overflow-y-auto custom-scrollbar p-3">
+                <!-- 手動操作區 -->
                 <div id="tab-play" class="space-y-3">
                     <div class="bg-indigo-50 border border-indigo-200 p-2.5 rounded-lg text-xs text-indigo-800 font-medium">
                         💡 <b>無行動限制：</b>只要還有 🎟️ 代幣，同一回合可多次點擊技能。點錯可點該組右上方的「撤銷上一步」。
@@ -83,6 +87,7 @@
                     <div id="action-team-list" class="space-y-2.5"></div>
                 </div>
 
+                <!-- 後台設定區 -->
                 <div id="tab-admin" class="hidden space-y-3">
                     <div class="bg-indigo-50 border border-indigo-200 p-3 rounded-xl flex items-center justify-between">
                         <span class="text-xs font-bold text-indigo-900">⚙️ 後台設定專用歷史記憶：</span>
@@ -138,6 +143,7 @@
         </section>
     </main>
 
+    <!-- Modal 視窗 -->
     <div id="batch-modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-2xl w-full max-w-5xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <div class="bg-slate-900 p-4 text-white text-center relative"><h3 class="text-2xl font-black text-amber-400">🔮 命運結算報告</h3><p class="text-xs text-slate-400 mt-1" id="batch-modal-round"></p></div>
@@ -146,6 +152,7 @@
         </div>
     </div>
 
+    <!-- 結局 Modal -->
     <div id="ending-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
         <div class="bg-slate-800 rounded-3xl max-w-4xl w-full overflow-hidden border-4 border-amber-500 p-8 text-center flex flex-col max-h-[90vh]">
             <h2 class="text-4xl font-black text-amber-400 mb-6 tracking-widest">🏆 3年生涯 終極結算</h2>
@@ -289,32 +296,31 @@
         function renderLeaderboard() {
             const prof = state.professions[state.config.globalProfession];
             document.getElementById('leaderboard-grid').innerHTML = state.teams.map((t, i) => {
-                return `<div class="bg-white rounded-2xl shadow-sm border p-4">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-xl font-black text-slate-900 truncate pr-2">${t.name}</h3>
+                return `<div class="bg-white rounded-2xl shadow-sm border p-3 h-fit">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-lg font-black text-slate-900 truncate pr-2">${t.name}</h3>
                         <div class="flex space-x-2 shrink-0">
                             <span class="bg-amber-100 text-amber-700 px-2 py-1 rounded-lg font-bold text-sm whitespace-nowrap">🪙 ${t.coin}</span>
                             <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold text-sm whitespace-nowrap">🎟️ ${t.tokens}</span>
                         </div>
                     </div>
-                    <div class="space-y-3">
+                    <div class="space-y-2">
                         <div><div class="flex justify-between text-[11px] font-bold text-slate-500 mb-1"><span>🔋 精力</span><span>${t.energy}/15</span></div><div class="h-2.5 bg-slate-200 rounded-full overflow-hidden"><div class="h-full ${t.energy>7?'bg-emerald-500':t.energy>3?'bg-amber-500':'bg-red-500'}" style="width: ${Math.min(100, (t.energy/15)*100)}%"></div></div></div>
                         <div><div class="flex justify-between text-[11px] font-bold text-slate-500 mb-1"><span>❤️ 心態</span><span>${t.mind}/15</span></div><div class="h-2.5 bg-slate-200 rounded-full overflow-hidden"><div class="h-full ${t.mind>7?'bg-rose-500':t.mind>3?'bg-amber-500':'bg-red-600'}" style="width: ${Math.min(100, (t.mind/15)*100)}%"></div></div></div>
                     </div>
                     ${state.currentRound === 6 && prof ? `
-                        <div class="mt-3 p-2 bg-purple-50 border border-purple-200 rounded-lg">
+                        <div class="mt-2 p-1.5 bg-purple-50 border border-purple-200 rounded-lg">
                             <span class="text-[10px] font-bold text-purple-800 mb-1 block">📌 第六回合結局選擇</span>
                             <select onchange="commitPlay(); state.teams[${i}].r6Choice=parseInt(this.value); saveState();" class="w-full text-xs font-bold text-purple-900 border border-purple-300 rounded p-1 bg-white">
                                 ${(prof.r6Branches || []).map((b, bIdx) => `<option value="${bIdx}" ${t.r6Choice===bIdx?'selected':''}>${b.name}</option>`).join('')}
                             </select>
                         </div>
                     ` : ''}
-                    <div class="mt-3 border-t pt-2 flex justify-end space-x-1 opacity-40 hover:opacity-100 transition-opacity"><button onclick="tweak(${i},'energy',1)" class="px-1 text-[9px] border rounded bg-slate-50 font-bold">🔋+</button><button onclick="tweak(${i},'mind',1)" class="px-1 text-[9px] border rounded bg-slate-50 font-bold">❤️+</button><button onclick="tweak(${i},'coin',1)" class="px-1 text-[9px] border rounded bg-slate-50 font-bold">🪙+</button><button onclick="tweak(${i},'tokens',1)" class="px-1 text-[9px] border rounded bg-slate-50 font-bold">🎟️+</button></div>
+                    <div class="mt-2 border-t pt-1.5 flex justify-end space-x-1 opacity-40 hover:opacity-100 transition-opacity"><button onclick="tweak(${i},'energy',1)" class="px-1 text-[9px] border rounded bg-slate-50 font-bold">🔋+</button><button onclick="tweak(${i},'mind',1)" class="px-1 text-[9px] border rounded bg-slate-50 font-bold">❤️+</button><button onclick="tweak(${i},'coin',1)" class="px-1 text-[9px] border rounded bg-slate-50 font-bold">🪙+</button><button onclick="tweak(${i},'tokens',1)" class="px-1 text-[9px] border rounded bg-slate-50 font-bold">🎟️+</button></div>
                 </div>`;
             }).join('');
         }
 
-        // 這裡已將所有 🧠 全數同步換成 ❤️ 圖示
         function renderActionTab() {
             document.getElementById('action-team-list').innerHTML = state.teams.map((t, i) => {
                 let btns = state.config.actions.map(a => {
