@@ -61,7 +61,7 @@
             <div id="leaderboard-grid" class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 custom-scrollbar pb-10"></div>
             
             <div class="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur border-t border-slate-300 p-4 flex justify-between items-center shadow-lg">
-                <button onclick="executeBatchDraw()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-lg px-8 py-3 rounded-xl shadow-md transition transform hover:scale-105">
+                <button id="btn-batch-draw" onclick="executeBatchDraw()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-lg px-8 py-3 rounded-xl shadow-md transition transform hover:scale-105">
                     🎲 全組集體命運抽卡
                 </button>
                 <button onclick="advanceRound()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-6 py-3 rounded-xl shadow transition text-sm">
@@ -182,7 +182,7 @@
                     ]
                 }
             },
-            currentRound: 1, batchResults: null
+            currentRound: 1, batchResults: null, hasDrawnThisRound: false
         };
 
         let state = {};
@@ -191,12 +191,12 @@
         let timerInterval = null;
         let timeLeft = 0;
 
-        // 【資料自動修復核心】確保舊存檔缺失的屬性全部補齊，防止 Map 或 Push 等 Undefined 錯誤
         function sanitizeState(st) {
             if (!st) return JSON.parse(JSON.stringify(DEFAULT_STATE));
             if (!st.config) st.config = DEFAULT_STATE.config;
             if (!st.teams) st.teams = DEFAULT_STATE.teams;
             if (!st.professions) st.professions = DEFAULT_STATE.professions;
+            if (st.hasDrawnThisRound === undefined) st.hasDrawnThisRound = false;
             
             if (!st.config.globalProfession) st.config.globalProfession = Object.keys(st.professions)[0] || "工程師";
             st.teams.forEach(t => { if (t.r6Choice === undefined) t.r6Choice = 0; });
@@ -296,6 +296,18 @@
             if(state.currentRound > 6) return showEnding();
             const prof = state.professions[state.config.globalProfession];
             document.getElementById('big-timer-display').innerText = `Round ${state.currentRound}：${prof ? prof.roundNames[state.currentRound - 1] : ''}`;
+            
+            const btnDraw = document.getElementById('btn-batch-draw');
+            if(state.hasDrawnThisRound) {
+                btnDraw.disabled = true;
+                btnDraw.className = "bg-slate-400 text-slate-100 font-black text-lg px-8 py-3 rounded-xl shadow cursor-not-allowed";
+                btnDraw.innerHTML = "✅ 本回合已抽卡";
+            } else {
+                btnDraw.disabled = false;
+                btnDraw.className = "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-lg px-8 py-3 rounded-xl shadow-md transition transform hover:scale-105";
+                btnDraw.innerHTML = "🎲 全組集體命運抽卡";
+            }
+
             timer.updateStr(); renderLeaderboard(); renderActionTab();
         }
 
@@ -331,7 +343,7 @@
                 const isHosp = t.status.includes('hospitalized');
                 const canAct = !isHosp && !t.actionUsed && t.tokens > 0;
                 let btns = state.config.actions.map(a => {
-                    const ok = canAct && t.tokens>=a.tCost && t.coin>=a.cCost && t.energy>=a.eCost && t.mind>=a.mCost;
+                    const ok = canAct && (a.tCost === 0 || t.tokens >= a.tCost) && (a.cCost === 0 || t.coin >= a.cCost) && (a.eCost === 0 || t.energy >= a.eCost) && (a.mCost === 0 || t.mind >= a.mCost);
                     return `<button onclick="executeAction(${i}, '${a.id}')" ${ok?'':'disabled'} class="text-[10px] font-bold p-1.5 border rounded ${ok?'bg-white hover:bg-slate-100 text-slate-700':'bg-slate-100 opacity-50 cursor-not-allowed'}">${a.name} (-${a.tCost}🎟️)</button>`;
                 }).join('');
                 return `<div class="border p-2 rounded-xl bg-slate-50 ${isHosp?'opacity-50 grayscale':''}"><div class="flex justify-between items-center mb-2"><span class="font-bold text-sm">${t.name}</span><span class="text-xs font-bold text-indigo-600">${t.tokens} 🎟️</span></div><div class="grid grid-cols-2 gap-1">${isHosp ? '<span class="text-xs text-rose-500 font-bold col-span-2">🏥 住院休養中</span>' : t.actionUsed ? `<div class="col-span-2 flex justify-between items-center bg-slate-200 p-1.5 rounded"><span class="text-xs text-slate-500 font-bold">✓ 已行動</span><button onclick="undoAction(${i})" class="bg-rose-100 hover:bg-rose-200 text-rose-600 px-2 py-1 rounded text-[10px] font-bold">快速撤銷技能</button></div>` : btns}</div></div>`;
@@ -348,7 +360,7 @@
         };
 
         window.executeBatchDraw = function() {
-            if(state.currentRound > 6) return;
+            if(state.currentRound > 6 || state.hasDrawnThisRound) return;
             const prof = state.professions[state.config.globalProfession];
             if(!prof) return alert("系統找不到當前職業資料，請確認後台設定。");
 
@@ -389,6 +401,7 @@
                     checkHospital(t);
                 }
             });
+            state.hasDrawnThisRound = true;
             document.getElementById('batch-modal').classList.add('hidden'); saveState(); renderAll(); alert("✅ 數值已套用，請點擊【▶ 開始】進行抉擇計時！");
         };
 
@@ -436,6 +449,7 @@
                 t.actionUsed = false; t.lastAction = null;
             });
             state.currentRound++;
+            state.hasDrawnThisRound = false;
             if([3,5].includes(state.currentRound)) { state.teams.forEach(t => { if(t.status==='normal') t.tokens = 2; }); alert("🎉 行動代幣已重置為 2 枚！"); }
             timer.reset(); saveState(); renderAll();
         };
