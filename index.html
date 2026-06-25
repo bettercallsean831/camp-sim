@@ -11,8 +11,6 @@
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .hospitalized-mask { filter: grayscale(100%); opacity: 0.75; position: relative; pointer-events: none; }
-        .hospitalized-mask::after { content: "🏥 暫停行動一回合"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-10deg); background: rgba(220, 38, 38, 0.9); color: white; padding: 5px 15px; font-weight: 900; border-radius: 8px; border: 2px solid white; font-size: 1.2rem; white-space: nowrap; z-index: 10; }
         details > summary { list-style: none; outline: none; cursor: pointer; }
         details > summary::-webkit-details-marker { display: none; }
     </style>
@@ -29,10 +27,9 @@
         </div>
     </header>
 
-    <!-- 加入 lg:h-[calc(100vh-80px)] 讓小螢幕自然滾動，大螢幕固定高度 -->
     <main class="flex-1 max-w-[1800px] w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:h-[calc(100vh-80px)] lg:overflow-hidden">
         
-        <!-- 左側：主看板 (高度改為自動貼合內容 max-h-full self-start) -->
+        <!-- 左側：主看板 -->
         <section class="lg:col-span-8 bg-slate-200/50 rounded-2xl shadow-inner border border-slate-300 p-4 flex flex-col self-start max-h-full w-full">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-slate-300 pb-4 shrink-0 gap-4">
                 <div>
@@ -59,11 +56,9 @@
                 </div>
             </div>
 
-            <!-- 隊伍陣列：內部加入捲動保護，但拿掉過多 padding -->
-            <div id="leaderboard-grid" class="overflow-y-auto min-h-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 content-start items-start custom-scrollbar mt-4 pr-1"></div>
+            <div id="leaderboard-grid" class="overflow-y-auto min-h-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 content-start items-start custom-scrollbar mt-4 pr-1 pb-4"></div>
             
-            <!-- 底部動作按鈕：不再是絕對定位，而是緊貼隊伍陣列下方 -->
-            <div class="mt-4 bg-white border border-slate-300 p-4 flex flex-col sm:flex-row justify-between items-center shadow-md rounded-xl shrink-0 gap-3">
+            <div class="mt-2 bg-white border border-slate-300 p-4 flex flex-col sm:flex-row justify-between items-center shadow-md rounded-xl shrink-0 gap-3">
                 <button id="btn-batch-draw" onclick="executeBatchDraw()" class="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-lg px-8 py-3 rounded-xl shadow-md transition transform hover:scale-105">
                     🎲 全組集體命運抽卡
                 </button>
@@ -81,6 +76,7 @@
             </div>
 
             <div class="flex-1 overflow-y-auto custom-scrollbar p-3">
+                <!-- 手動操作區 -->
                 <div id="tab-play" class="space-y-3">
                     <div class="bg-indigo-50 border border-indigo-200 p-2.5 rounded-lg text-xs text-indigo-800 font-medium">
                         💡 <b>無行動限制：</b>只要還有 🎟️ 代幣，同一回合可多次點擊技能。點錯可點該組右上方的「撤銷上一步」。
@@ -88,6 +84,7 @@
                     <div id="action-team-list" class="space-y-2.5"></div>
                 </div>
 
+                <!-- 後台設定區 -->
                 <div id="tab-admin" class="hidden space-y-3">
                     <div class="bg-indigo-50 border border-indigo-200 p-3 rounded-xl flex items-center justify-between">
                         <span class="text-xs font-bold text-indigo-900">⚙️ 後台設定專用歷史記憶：</span>
@@ -136,7 +133,7 @@
                     <div class="bg-rose-50 p-3 rounded-xl border border-rose-200 flex flex-wrap gap-2">
                         <button onclick="exportData()" class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1.5 rounded shadow">📤 匯出設定檔</button>
                         <label class="bg-emerald-600 text-white text-[10px] font-bold px-3 py-1.5 rounded shadow cursor-pointer">📥 匯入 JSON <input type="file" class="hidden" onchange="importData(event)"></label>
-                        <button onclick="resetToDefaultState()" class="bg-red-600 text-white text-[10px] font-bold px-3 py-1.5 rounded shadow">⚠️ 清除重置</button>
+                        <button onclick="resetToDefaultState()" class="bg-red-600 text-white text-[10px] font-bold px-3 py-1.5 rounded shadow">⚠️ 恢復原廠預設 (含後台)</button>
                     </div>
                 </div>
             </div>
@@ -157,7 +154,7 @@
         <div class="bg-slate-800 rounded-3xl max-w-4xl w-full overflow-hidden border-4 border-amber-500 p-8 text-center flex flex-col max-h-[90vh]">
             <h2 class="text-4xl font-black text-amber-400 mb-6 tracking-widest">🏆 3年生涯 終極結算</h2>
             <div id="ending-results" class="flex-1 overflow-y-auto custom-scrollbar grid grid-cols-1 md:grid-cols-2 gap-4 text-left"></div>
-            <div class="pt-6 mt-4 border-t border-slate-600"><button onclick="resetToDefaultState()" class="bg-amber-600 hover:bg-amber-500 text-white font-black px-8 py-3 rounded-xl text-lg shadow-lg">開啟全新人生局</button></div>
+            <div class="pt-6 mt-4 border-t border-slate-600"><button onclick="startNewGame()" class="bg-amber-600 hover:bg-amber-500 text-white font-black px-8 py-3 rounded-xl text-lg shadow-lg">開啟全新人生局 (保留後台設定)</button></div>
         </div>
     </div>
 
@@ -178,8 +175,8 @@
                 ]
             },
             teams: [
-                { id: "t1", name: "火箭隊", energy: 10, mind: 10, coin: 0, tokens: 2, actionHistory: [], r6Choice: 0 },
-                { id: "t2", name: "夢想家", energy: 10, mind: 10, coin: 0, tokens: 2, actionHistory: [], r6Choice: 0 }
+                { id: "t1", name: "火箭隊", energy: 15, mind: 15, coin: 5, tokens: 2, actionHistory: [], r6Choice: 0 },
+                { id: "t2", name: "夢想家", energy: 15, mind: 15, coin: 5, tokens: 2, actionHistory: [], r6Choice: 0 }
             ],
             professions: {
                 "工程師": { 
@@ -230,7 +227,10 @@
             st.teams.forEach(t => { 
                 if (t.r6Choice === undefined) t.r6Choice = 0; 
                 if (!t.actionHistory) t.actionHistory = []; 
-                delete t.status; delete t.actionUsed; delete t.lastAction;
+                // 確保舊版匯入時有足夠初始值
+                if (t.energy === undefined) t.energy = 15;
+                if (t.mind === undefined) t.mind = 15;
+                if (t.coin === undefined) t.coin = 5;
             });
             
             Object.keys(st.professions).forEach(pName => { 
@@ -277,7 +277,31 @@
             localStorage.setItem("camp_admin_past", JSON.stringify(adminPast)); localStorage.setItem("camp_admin_future", JSON.stringify(adminFuture)); 
         }
 
-        function resetToDefaultState() { if(confirm("確定重置嗎？所有進度將會消失！")) { localStorage.clear(); location.reload(); } }
+        function resetToDefaultState() { 
+            if(confirm("⚠️ 警告：這會連同所有「後台設定」一併清空回到原廠預設狀態！\n若只想要重新一局遊戲，請使用結算畫面的「開啟全新人生局」。\n\n確定要徹底重置嗎？")) { 
+                localStorage.clear(); location.reload(); 
+            } 
+        }
+
+        window.startNewGame = function() {
+            if(!confirm("確定要重啟全新一局嗎？這會重置回合與所有隊伍的分數，但「保留後台設定」！")) return;
+            commitPlay();
+            state.currentRound = 1;
+            state.hasDrawnThisRound = false;
+            state.batchResults = null;
+            state.teams.forEach(t => {
+                t.energy = 15;
+                t.mind = 15;
+                t.coin = 5;
+                t.tokens = 2;
+                t.actionHistory = [];
+                t.r6Choice = 0;
+            });
+            playPast = []; playFuture = [];
+            saveState();
+            document.getElementById('ending-modal').classList.add('hidden');
+            renderAll();
+        };
 
         window.switchTab = function(tab) {
             document.getElementById('tab-play').classList.toggle('hidden', tab !== 'play');
@@ -317,8 +341,8 @@
                         </div>
                     </div>
                     <div class="space-y-2">
-                        <div><div class="flex justify-between text-[11px] font-bold text-slate-500 mb-1"><span>🔋 精力</span><span>${t.energy}/15</span></div><div class="h-2.5 bg-slate-200 rounded-full overflow-hidden"><div class="h-full ${t.energy>7?'bg-emerald-500':t.energy>3?'bg-amber-500':'bg-red-500'}" style="width: ${Math.min(100, (t.energy/15)*100)}%"></div></div></div>
-                        <div><div class="flex justify-between text-[11px] font-bold text-slate-500 mb-1"><span>❤️ 心態</span><span>${t.mind}/15</span></div><div class="h-2.5 bg-slate-200 rounded-full overflow-hidden"><div class="h-full ${t.mind>7?'bg-rose-500':t.mind>3?'bg-amber-500':'bg-red-600'}" style="width: ${Math.min(100, (t.mind/15)*100)}%"></div></div></div>
+                        <div><div class="flex justify-between text-[11px] font-bold text-slate-500 mb-1"><span>🔋 精力</span><span>${t.energy}/20</span></div><div class="h-2.5 bg-slate-200 rounded-full overflow-hidden"><div class="h-full ${t.energy>10?'bg-emerald-500':t.energy>5?'bg-amber-500':'bg-red-500'}" style="width: ${Math.min(100, (t.energy/20)*100)}%"></div></div></div>
+                        <div><div class="flex justify-between text-[11px] font-bold text-slate-500 mb-1"><span>❤️ 心態</span><span>${t.mind}/20</span></div><div class="h-2.5 bg-slate-200 rounded-full overflow-hidden"><div class="h-full ${t.mind>10?'bg-rose-500':t.mind>5?'bg-amber-500':'bg-red-600'}" style="width: ${Math.min(100, (t.mind/20)*100)}%"></div></div></div>
                     </div>
                     ${state.currentRound === 6 && prof ? `
                         <div class="mt-2 p-1.5 bg-purple-50 border border-purple-200 rounded-lg">
@@ -357,7 +381,7 @@
 
         window.tweak = function(idx, f, a) { 
             commitPlay(); state.teams[idx][f] += a; 
-            if(f==='energy' || f==='mind') state.teams[idx][f] = Math.min(15, Math.max(0, state.teams[idx][f]));
+            if(f==='energy' || f==='mind') state.teams[idx][f] = Math.min(20, Math.max(0, state.teams[idx][f]));
             saveState(); renderAll(); 
         };
 
@@ -391,7 +415,7 @@
                 if(!r.skipped && r.card) {
                     let t = state.teams[r.teamIdx];
                     t.energy += parseInt(r.card.e)||0; t.mind += parseInt(r.card.m)||0; t.coin += parseInt(r.card.c)||0;
-                    t.energy = Math.min(15, Math.max(0, t.energy)); t.mind = Math.min(15, Math.max(0, t.mind));
+                    t.energy = Math.min(20, Math.max(0, t.energy)); t.mind = Math.min(20, Math.max(0, t.mind));
                 }
             });
             state.hasDrawnThisRound = true;
@@ -404,7 +428,7 @@
             if(!a) return;
             t.tokens -= a.tCost; t.coin -= a.cCost; t.energy -= a.eCost; t.mind -= a.mCost;
             t.tokens += a.tGain; t.coin += a.cGain; t.energy += a.eGain; t.mind += a.mGain;
-            t.energy = Math.min(15, Math.max(0, t.energy)); t.mind = Math.min(15, Math.max(0, t.mind));
+            t.energy = Math.min(20, Math.max(0, t.energy)); t.mind = Math.min(20, Math.max(0, t.mind));
             t.actionHistory.push(aId); saveState(); renderAll();
         };
 
@@ -417,7 +441,7 @@
             if(a) {
                 t.tokens += a.tCost; t.coin += a.cCost; t.energy += a.eCost; t.mind += a.mCost;
                 t.tokens -= a.tGain; t.coin -= a.cGain; t.energy -= a.eGain; t.mind -= a.mGain;
-                t.energy = Math.min(15, Math.max(0, t.energy)); t.mind = Math.min(15, Math.max(0, t.mind));
+                t.energy = Math.min(20, Math.max(0, t.energy)); t.mind = Math.min(20, Math.max(0, t.mind));
             }
             saveState(); renderAll();
         };
@@ -430,25 +454,27 @@
             state.teams.forEach(t => {
                 let rescued = false; let msg = `🚑 【${t.name}】`;
                 if (t.energy <= 1) {
-                    if (t.coin >= 2) { t.coin -= 2; t.energy += 2; msg += `精力見底，觸發「同價低效」急救：扣除 2 金幣，恢復 2 點精力。`; } 
-                    else { t.energy += 1; msg += `破產且精力見底，觸發「零元低保」救濟：免費恢復 1 點精力。`; }
+                    if (t.coin >= 1) { t.coin -= 1; t.energy += 2; msg += `精力見底：強制扣除 1 金幣，補回 2 精力。`; } 
+                    else { t.energy += 1; msg += `破產且精力見底：無金幣可扣，低保強制補回 1 精力。`; }
                     rescued = true;
                 }
                 if (t.mind <= 1) {
-                    let subMsg = rescued ? `\n> 另外，心態崩潰，觸發` : `心態崩潰，觸發`;
-                    if (t.coin >= 2) { t.coin -= 2; t.mind += 2; msg += `${subMsg}「同價低效」急救：扣除 2 金幣，恢復 2 點心態。`; } 
-                    else { t.mind += 1; msg += `${subMsg}「零元低保」救濟：免費恢復 1 點心態。`; }
+                    let subMsg = rescued ? `\n> 另外，` : ``;
+                    if (t.coin >= 1) { t.coin -= 1; t.mind += 2; msg += `${subMsg}心態崩潰：強制扣除 1 金幣，補回 2 心態。`; } 
+                    else { t.mind += 1; msg += `${subMsg}破產且心態崩潰：無金幣可扣，低保強制補回 1 心態。`; }
                     rescued = true;
                 }
-                if (rescued) { rescueMsgs.push(msg); t.energy = Math.min(15, Math.max(0, t.energy)); t.mind = Math.min(15, Math.max(0, t.mind)); }
+                if (rescued) { rescueMsgs.push(msg); t.energy = Math.min(20, Math.max(0, t.energy)); t.mind = Math.min(20, Math.max(0, t.mind)); }
+                
                 t.actionHistory = []; 
+                // 強制覆蓋重置，無法累積代幣
+                t.tokens = 2;
             });
 
             if (rescueMsgs.length > 0) { alert(`⚠️ 系統結算緊急救援通知 ⚠️\n\n${rescueMsgs.join('\n\n')}`); }
 
             state.currentRound++;
             state.hasDrawnThisRound = false; 
-            if([3,5].includes(state.currentRound)) { state.teams.forEach(t => { t.tokens = 2; }); alert("🎉 新生涯階段開始！所有隊伍的 🎟️ 行動代幣已補滿至 2 枚！"); }
             timer.reset(); saveState(); renderAll();
         };
 
@@ -529,7 +555,7 @@
 
         window.updateConfig = function() { commitAdmin(); state.config.timer = parseInt(document.getElementById('cfg-timer').value)||180; saveState(); renderAll(); };
         window.addNewTitle = function() { commitAdmin(); state.config.titles.push({name:"新稱號", desc: "", cOp1:"",cVal1:"", cOp:"",cVal:"", eOp1:"",eVal1:"", eOp:"",eVal:"", mOp1:"",mVal1:"", mOp:"",mVal:""}); saveState(); syncAdmin(); };
-        window.addNewTeam = function() { commitAdmin(); state.teams.push({id:"t_"+Date.now(), name:"新隊伍", energy:10, mind:10, coin:0, tokens:2, actionHistory:[], r6Choice:0}); saveState(); syncAdmin(); renderAll(); };
+        window.addNewTeam = function() { commitAdmin(); state.teams.push({id:"t_"+Date.now(), name:"新隊伍", energy:15, mind:15, coin:5, tokens:2, actionHistory:[], r6Choice:0}); saveState(); syncAdmin(); renderAll(); };
         window.addNewAction = function() { commitAdmin(); state.config.actions.push({id:"a_"+Date.now(), name:"新技能", tCost:1, cCost:0, eCost:0, mCost:0, tGain:0, cGain:0, eGain:0, mGain:0}); saveState(); syncAdmin(); };
         window.addNewProfession = function() { let n=document.getElementById("new-profession-name").value; if(n&&!state.professions[n]){ commitAdmin(); state.professions[n]={roundNames:["R1", "R2", "R3", "R4", "R5", "R6結局"], pools:Array(5).fill().map(()=>[]), r6Branches:[{name:"預設路線",cards:[]}]};document.getElementById("new-profession-name").value="";saveState();syncAdmin();} };
         
