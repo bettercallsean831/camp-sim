@@ -11,8 +11,6 @@
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .hospitalized-mask { filter: grayscale(100%); opacity: 0.75; position: relative; pointer-events: none; }
-        .hospitalized-mask::after { content: "🏥 暫停行動一回合"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-10deg); background: rgba(220, 38, 38, 0.9); color: white; padding: 5px 15px; font-weight: 900; border-radius: 8px; border: 2px solid white; font-size: 1.2rem; white-space: nowrap; z-index: 10; }
         details > summary { list-style: none; outline: none; cursor: pointer; }
         details > summary::-webkit-details-marker { display: none; }
     </style>
@@ -58,7 +56,6 @@
                 </div>
             </div>
 
-            <!-- 加入了 content-start items-start 防止卡片垂直拉伸 -->
             <div id="leaderboard-grid" class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 content-start items-start custom-scrollbar pb-20"></div>
             
             <div class="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur border-t border-slate-300 p-4 flex justify-between items-center shadow-lg">
@@ -79,7 +76,6 @@
             </div>
 
             <div class="flex-1 overflow-y-auto custom-scrollbar p-3">
-                <!-- 手動操作區 -->
                 <div id="tab-play" class="space-y-3">
                     <div class="bg-indigo-50 border border-indigo-200 p-2.5 rounded-lg text-xs text-indigo-800 font-medium">
                         💡 <b>無行動限制：</b>只要還有 🎟️ 代幣，同一回合可多次點擊技能。點錯可點該組右上方的「撤銷上一步」。
@@ -87,7 +83,6 @@
                     <div id="action-team-list" class="space-y-2.5"></div>
                 </div>
 
-                <!-- 後台設定區 -->
                 <div id="tab-admin" class="hidden space-y-3">
                     <div class="bg-indigo-50 border border-indigo-200 p-3 rounded-xl flex items-center justify-between">
                         <span class="text-xs font-bold text-indigo-900">⚙️ 後台設定專用歷史記憶：</span>
@@ -206,6 +201,20 @@
         window.commitAdmin = function() { adminPast.push(JSON.stringify(state)); if(adminPast.length > 50) adminPast.shift(); adminFuture = []; };
         window.adminUndo = function() { if(adminPast.length === 0) return; adminFuture.push(JSON.stringify(state)); state = sanitizeState(JSON.parse(adminPast.pop())); saveState(); syncAdmin(); renderAll(); };
         window.adminRedo = function() { if(adminFuture.length === 0) return; adminPast.push(JSON.stringify(state)); state = sanitizeState(JSON.parse(adminFuture.pop())); saveState(); syncAdmin(); renderAll(); };
+
+        // 共用陣列移動函數
+        window.moveArr = function(arr, idx, dir) {
+            if(idx + dir < 0 || idx + dir >= arr.length) return false;
+            let temp = arr[idx]; arr[idx] = arr[idx + dir]; arr[idx + dir] = temp;
+            return true;
+        };
+        // 專屬移動綁定函數 (與UI對應)
+        window.moveTitle = function(i, d) { if(moveArr(state.config.titles, i, d)) { commitAdmin(); saveState(); syncAdmin(); renderAll(); } };
+        window.moveTeam = function(i, d) { if(moveArr(state.teams, i, d)) { commitAdmin(); saveState(); syncAdmin(); renderAll(); } };
+        window.moveAction = function(i, d) { if(moveArr(state.config.actions, i, d)) { commitAdmin(); saveState(); syncAdmin(); renderActionTab(); } };
+        window.moveCard = function(p, r, i, d) { if(moveArr(state.professions[p].pools[r], i, d)) { commitAdmin(); saveState(); syncAdmin(); } };
+        window.moveBranch = function(p, b, d) { if(moveArr(state.professions[p].r6Branches, b, d)) { commitAdmin(); saveState(); syncAdmin(); renderAll(); } };
+        window.moveBranchCard = function(p, b, i, d) { if(moveArr(state.professions[p].r6Branches[b].cards, i, d)) { commitAdmin(); saveState(); syncAdmin(); } };
 
         function sanitizeState(st) {
             if (!st) return JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -476,7 +485,14 @@
             
             document.getElementById('admin-titles-list').innerHTML = state.config.titles.map((r,i) => `
                 <div class="bg-white border rounded-xl p-3 text-[10px] mb-3 shadow-sm">
-                    <div class="flex justify-between items-center mb-2"><input value="${r.name}" onchange="commitAdmin(); state.config.titles[${i}].name=this.value;saveState()" class="border p-1.5 w-1/3 rounded font-bold text-indigo-700 text-xs" placeholder="稱號名稱"><button onclick="commitAdmin(); state.config.titles.splice(${i},1);saveState();syncAdmin()" class="bg-rose-100 text-rose-600 px-3 py-1 rounded font-bold hover:bg-rose-200">✕ 刪除稱號</button></div>
+                    <div class="flex justify-between items-center mb-2">
+                        <input value="${r.name}" onchange="commitAdmin(); state.config.titles[${i}].name=this.value;saveState()" class="border p-1.5 w-1/3 rounded font-bold text-indigo-700 text-xs" placeholder="稱號名稱">
+                        <div class="flex space-x-1">
+                            <button onclick="moveTitle(${i}, -1)" class="bg-slate-200 text-slate-600 px-2 py-1 rounded font-bold text-[10px] hover:bg-slate-300 transition">⬆️ 移上</button>
+                            <button onclick="moveTitle(${i}, 1)" class="bg-slate-200 text-slate-600 px-2 py-1 rounded font-bold text-[10px] hover:bg-slate-300 transition">⬇️ 移下</button>
+                            <button onclick="commitAdmin(); state.config.titles.splice(${i},1);saveState();syncAdmin()" class="bg-rose-100 text-rose-600 px-3 py-1 rounded font-bold hover:bg-rose-200 transition">✕ 刪除</button>
+                        </div>
+                    </div>
                     <div class="grid grid-cols-1 xl:grid-cols-3 gap-2 mb-2 bg-slate-50 p-2 rounded-lg border border-slate-200/60">
                         <div class="flex items-center justify-center space-x-1 bg-white p-1.5 border border-slate-200 rounded shadow-sm"><input value="${r.cVal1||''}" type="number" onchange="commitAdmin(); state.config.titles[${i}].cVal1=this.value;saveState()" class="w-10 border p-1 rounded text-center bg-slate-50 font-bold" placeholder="空"><select onchange="commitAdmin(); state.config.titles[${i}].cOp1=this.value;saveState()" class="border p-0.5 rounded text-[10px] bg-slate-50 font-bold text-slate-600">${opts(r.cOp1)}</select><span class="font-black text-amber-500 mx-0.5 text-xs">🪙</span><select onchange="commitAdmin(); state.config.titles[${i}].cOp=this.value;saveState()" class="border p-0.5 rounded text-[10px] bg-slate-50 font-bold text-slate-600">${opts(r.cOp)}</select><input value="${r.cVal||''}" type="number" onchange="commitAdmin(); state.config.titles[${i}].cVal=this.value;saveState()" class="w-10 border p-1 rounded text-center bg-slate-50 font-bold" placeholder="空"></div>
                         <div class="flex items-center justify-center space-x-1 bg-white p-1.5 border border-slate-200 rounded shadow-sm"><input value="${r.eVal1||''}" type="number" onchange="commitAdmin(); state.config.titles[${i}].eVal1=this.value;saveState()" class="w-10 border p-1 rounded text-center bg-slate-50 font-bold" placeholder="空"><select onchange="commitAdmin(); state.config.titles[${i}].eOp1=this.value;saveState()" class="border p-0.5 rounded text-[10px] bg-slate-50 font-bold text-slate-600">${opts(r.eOp1)}</select><span class="font-black text-emerald-500 mx-0.5 text-xs">🔋</span><select onchange="commitAdmin(); state.config.titles[${i}].eOp=this.value;saveState()" class="border p-0.5 rounded text-[10px] bg-slate-50 font-bold text-slate-600">${opts(r.eOp)}</select><input value="${r.eVal||''}" type="number" onchange="commitAdmin(); state.config.titles[${i}].eVal=this.value;saveState()" class="w-10 border p-1 rounded text-center bg-slate-50 font-bold" placeholder="空"></div>
@@ -485,10 +501,25 @@
                     <div><input value="${r.desc || ''}" onchange="commitAdmin(); state.config.titles[${i}].desc=this.value;saveState()" class="w-full border p-1.5 rounded bg-slate-50/70 text-slate-600" placeholder="🏆 請輸入獲得此稱號時，大螢幕上的恭喜/評語敘述..."></div>
                 </div>`).join('');
             
-            document.getElementById('admin-team-list').innerHTML = state.teams.map((t,i) => `<div class="flex space-x-1 mb-1 text-xs"><input value="${t.name}" onchange="commitAdmin(); state.teams[${i}].name=this.value;saveState();renderAll()" class="border p-1.5 flex-1 rounded font-bold text-slate-700"><button onclick="commitAdmin(); state.teams.splice(${i},1);saveState();syncAdmin();renderAll()" class="bg-rose-100 text-rose-600 px-3 rounded font-bold">刪除</button></div>`).join('');
+            document.getElementById('admin-team-list').innerHTML = state.teams.map((t,i) => `
+                <div class="flex space-x-1 mb-1 text-xs">
+                    <input value="${t.name}" onchange="commitAdmin(); state.teams[${i}].name=this.value;saveState();renderAll()" class="border p-1.5 flex-1 rounded font-bold text-slate-700">
+                    <button onclick="moveTeam(${i}, -1)" class="bg-slate-200 text-slate-600 px-2.5 rounded font-bold hover:bg-slate-300 transition">⬆️</button>
+                    <button onclick="moveTeam(${i}, 1)" class="bg-slate-200 text-slate-600 px-2.5 rounded font-bold hover:bg-slate-300 transition">⬇️</button>
+                    <button onclick="commitAdmin(); state.teams.splice(${i},1);saveState();syncAdmin();renderAll()" class="bg-rose-100 text-rose-600 px-3 rounded font-bold hover:bg-rose-200 transition">刪除</button>
+                </div>`).join('');
             
             document.getElementById('admin-action-list').innerHTML = state.config.actions.map((a,i) => `
-                <div class="bg-white border rounded-xl p-3 text-xs mb-3 shadow-sm"><div class="flex justify-between items-center mb-2 border-b pb-2"><input value="${a.name}" onchange="commitAdmin(); state.config.actions[${i}].name=this.value;saveState();renderActionTab()" class="border p-1 w-2/3 font-bold text-indigo-700 rounded" placeholder="技能名稱"><button onclick="commitAdmin(); state.config.actions.splice(${i},1);saveState();syncAdmin();renderActionTab()" class="bg-rose-100 text-rose-600 px-2 py-1 rounded font-bold">刪除</button></div><div class="grid grid-cols-2 gap-2"><div class="bg-rose-50 p-2 rounded"><div class="font-bold text-[10px] text-rose-700 mb-1 text-center border-b border-rose-200 pb-1">⚠️ 點擊消耗 (Cost)</div><div class="grid grid-cols-4 gap-1 text-[10px] text-center"><div>🎟️<input value="${a.tCost}" type="number" onchange="commitAdmin(); state.config.actions[${i}].tCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div><div>🪙<input value="${a.cCost}" type="number" onchange="commitAdmin(); state.config.actions[${i}].cCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div><div>🔋<input value="${a.eCost}" type="number" onchange="commitAdmin(); state.config.actions[${i}].eCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div><div>❤️<input value="${a.mCost}" type="number" onchange="commitAdmin(); state.config.actions[${i}].mCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div></div></div><div class="bg-emerald-50 p-2 rounded"><div class="font-bold text-[10px] text-emerald-700 mb-1 text-center border-b border-emerald-200 pb-1">🎁 執行獲得 (Gain)</div><div class="grid grid-cols-4 gap-1 text-[10px] text-center"><div>🎟️<input value="${a.tGain}" type="number" onchange="commitAdmin(); state.config.actions[${i}].tGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div><div>🪙<input value="${a.cGain}" type="number" onchange="commitAdmin(); state.config.actions[${i}].cGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div><div>🔋<input value="${a.eGain}" type="number" onchange="commitAdmin(); state.config.actions[${i}].eGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div><div>❤️<input value="${a.mGain}" type="number" onchange="commitAdmin(); state.config.actions[${i}].mGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div></div></div></div></div>
+                <div class="bg-white border rounded-xl p-3 text-xs mb-3 shadow-sm">
+                    <div class="flex justify-between items-center mb-2 border-b pb-2">
+                        <input value="${a.name}" onchange="commitAdmin(); state.config.actions[${i}].name=this.value;saveState();renderActionTab()" class="border p-1 w-2/3 font-bold text-indigo-700 rounded" placeholder="技能名稱">
+                        <div class="flex space-x-1">
+                            <button onclick="moveAction(${i}, -1)" class="bg-slate-200 text-slate-600 px-2 py-1 rounded font-bold text-[10px] hover:bg-slate-300 transition">⬆️</button>
+                            <button onclick="moveAction(${i}, 1)" class="bg-slate-200 text-slate-600 px-2 py-1 rounded font-bold text-[10px] hover:bg-slate-300 transition">⬇️</button>
+                            <button onclick="commitAdmin(); state.config.actions.splice(${i},1);saveState();syncAdmin();renderActionTab()" class="bg-rose-100 text-rose-600 px-2 py-1 rounded font-bold hover:bg-rose-200 transition">刪除</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2"><div class="bg-rose-50 p-2 rounded"><div class="font-bold text-[10px] text-rose-700 mb-1 text-center border-b border-rose-200 pb-1">⚠️ 點擊消耗 (Cost)</div><div class="grid grid-cols-4 gap-1 text-[10px] text-center"><div>🎟️<input value="${a.tCost}" type="number" onchange="commitAdmin(); state.config.actions[${i}].tCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div><div>🪙<input value="${a.cCost}" type="number" onchange="commitAdmin(); state.config.actions[${i}].cCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div><div>🔋<input value="${a.eCost}" type="number" onchange="commitAdmin(); state.config.actions[${i}].eCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div><div>❤️<input value="${a.mCost}" type="number" onchange="commitAdmin(); state.config.actions[${i}].mCost=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-rose-600 font-bold mt-1 text-center"></div></div></div><div class="bg-emerald-50 p-2 rounded"><div class="font-bold text-[10px] text-emerald-700 mb-1 text-center border-b border-emerald-200 pb-1">🎁 執行獲得 (Gain)</div><div class="grid grid-cols-4 gap-1 text-[10px] text-center"><div>🎟️<input value="${a.tGain}" type="number" onchange="commitAdmin(); state.config.actions[${i}].tGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div><div>🪙<input value="${a.cGain}" type="number" onchange="commitAdmin(); state.config.actions[${i}].cGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div><div>🔋<input value="${a.eGain}" type="number" onchange="commitAdmin(); state.config.actions[${i}].eGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div><div>❤️<input value="${a.mGain}" type="number" onchange="commitAdmin(); state.config.actions[${i}].mGain=parseInt(this.value)||0;saveState();renderActionTab()" class="w-full border p-1 rounded text-emerald-600 font-bold mt-1 text-center"></div></div></div></div></div>
             `).join('');
             renderAdminProfessions();
         };
@@ -514,7 +545,20 @@
                         </summary>
                         <div class="p-2 space-y-2">
                             <div class="grid grid-cols-12 gap-1 text-[10px] font-bold text-slate-500 bg-slate-50 p-1 text-center rounded"><div class="col-span-2 text-left">卡名</div><div class="col-span-1">權重</div><div class="col-span-3 text-left">事件敘述</div><div class="col-span-1">🔋</div><div class="col-span-1">❤️</div><div class="col-span-1">🪙</div><div class="col-span-3">操作</div></div>
-                            ${(pool||[]).map((c, i) => `<div class="grid grid-cols-12 gap-1 text-[10px] items-center border-b pb-1"><div class="col-span-2"><input value="${c.name||''}" onchange="commitAdmin(); state.professions['${pName}'].pools[${rIdx}][${i}].name=this.value;saveState()" class="border w-full p-1 rounded" placeholder="卡名"></div><div class="col-span-1"><input value="${c.w}" type="number" onchange="commitAdmin(); state.professions['${pName}'].pools[${rIdx}][${i}].w=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center"></div><div class="col-span-3"><input value="${c.text||''}" onchange="commitAdmin(); state.professions['${pName}'].pools[${rIdx}][${i}].text=this.value;saveState()" class="border w-full p-1 rounded" placeholder="敘述"></div><div class="col-span-1 text-emerald-600"><input value="${c.e}" type="number" onchange="commitAdmin(); state.professions['${pName}'].pools[${rIdx}][${i}].e=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div><div class="col-span-1 text-rose-600"><input value="${c.m}" type="number" onchange="commitAdmin(); state.professions['${pName}'].pools[${rIdx}][${i}].m=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div><div class="col-span-1 text-amber-600"><input value="${c.c}" type="number" onchange="commitAdmin(); state.professions['${pName}'].pools[${rIdx}][${i}].c=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div><div class="col-span-3 text-center flex justify-center"><button onclick="commitAdmin(); state.professions['${pName}'].pools[${rIdx}].splice(${i},1);saveState();syncAdmin()" class="bg-rose-100 text-rose-600 px-2 py-1 rounded font-bold text-[9px]">刪除</button></div></div>`).join('')}
+                            ${(pool||[]).map((c, i) => `
+                            <div class="grid grid-cols-12 gap-1 text-[10px] items-center border-b pb-1">
+                                <div class="col-span-2"><input value="${c.name||''}" onchange="commitAdmin(); state.professions['${pName}'].pools[${rIdx}][${i}].name=this.value;saveState()" class="border w-full p-1 rounded" placeholder="卡名"></div>
+                                <div class="col-span-1"><input value="${c.w}" type="number" onchange="commitAdmin(); state.professions['${pName}'].pools[${rIdx}][${i}].w=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center"></div>
+                                <div class="col-span-3"><input value="${c.text||''}" onchange="commitAdmin(); state.professions['${pName}'].pools[${rIdx}][${i}].text=this.value;saveState()" class="border w-full p-1 rounded" placeholder="敘述"></div>
+                                <div class="col-span-1 text-emerald-600"><input value="${c.e}" type="number" onchange="commitAdmin(); state.professions['${pName}'].pools[${rIdx}][${i}].e=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div>
+                                <div class="col-span-1 text-rose-600"><input value="${c.m}" type="number" onchange="commitAdmin(); state.professions['${pName}'].pools[${rIdx}][${i}].m=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div>
+                                <div class="col-span-1 text-amber-600"><input value="${c.c}" type="number" onchange="commitAdmin(); state.professions['${pName}'].pools[${rIdx}][${i}].c=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div>
+                                <div class="col-span-3 text-center flex justify-center space-x-0.5">
+                                    <button onclick="moveCard('${pName}', ${rIdx}, ${i}, -1)" class="bg-slate-200 text-slate-600 px-1.5 py-1 rounded font-bold text-[9px] hover:bg-slate-300">⬆️</button>
+                                    <button onclick="moveCard('${pName}', ${rIdx}, ${i}, 1)" class="bg-slate-200 text-slate-600 px-1.5 py-1 rounded font-bold text-[9px] hover:bg-slate-300">⬇️</button>
+                                    <button onclick="commitAdmin(); state.professions['${pName}'].pools[${rIdx}].splice(${i},1);saveState();syncAdmin()" class="bg-rose-100 text-rose-600 px-2 py-1 rounded font-bold text-[9px] hover:bg-rose-200">刪除</button>
+                                </div>
+                            </div>`).join('')}
                         </div>
                     </details>
                 `).join('');
@@ -530,11 +574,29 @@
                                 <div class="border border-purple-200 bg-white p-2 rounded">
                                     <div class="flex justify-between items-center mb-2 pb-2 border-b border-slate-100">
                                         <div class="flex items-center space-x-2"><span class="font-bold text-[10px] text-purple-700">路線名稱：</span><input value="${b.name}" onchange="commitAdmin(); state.professions['${pName}'].r6Branches[${bIdx}].name=this.value;saveState();renderAll();" class="border border-purple-300 p-1 text-[11px] rounded w-48 font-bold text-purple-900"></div>
-                                        <div class="flex space-x-2"><button onclick="commitAdmin(); state.professions['${pName}'].r6Branches[${bIdx}].cards.push({name:'新結局卡',w:10,text:'',e:0,m:0,c:0}); saveState(); syncAdmin();" class="text-indigo-600 bg-indigo-50 px-2 py-1 rounded text-[9px] font-bold">+ 新增此路線卡片</button><button onclick="if(confirm('刪除整條路線？')){commitAdmin(); state.professions['${pName}'].r6Branches.splice(${bIdx},1); saveState(); syncAdmin();}" class="text-rose-600 bg-rose-50 px-2 py-1 rounded text-[9px] font-bold">刪除路線</button></div>
+                                        <div class="flex space-x-1">
+                                            <button onclick="moveBranch('${pName}', ${bIdx}, -1)" class="bg-slate-200 text-slate-600 px-2 py-1 rounded text-[9px] font-bold hover:bg-slate-300">⬆️ 移上</button>
+                                            <button onclick="moveBranch('${pName}', ${bIdx}, 1)" class="bg-slate-200 text-slate-600 px-2 py-1 rounded text-[9px] font-bold hover:bg-slate-300">⬇️ 移下</button>
+                                            <button onclick="commitAdmin(); state.professions['${pName}'].r6Branches[${bIdx}].cards.push({name:'新結局卡',w:10,text:'',e:0,m:0,c:0}); saveState(); syncAdmin();" class="text-indigo-600 bg-indigo-50 px-2 py-1 rounded text-[9px] font-bold ml-2">+ 新增卡片</button>
+                                            <button onclick="if(confirm('刪除整條路線？')){commitAdmin(); state.professions['${pName}'].r6Branches.splice(${bIdx},1); saveState(); syncAdmin();}" class="text-rose-600 bg-rose-50 px-2 py-1 rounded text-[9px] font-bold">刪除路線</button>
+                                        </div>
                                     </div>
                                     <div class="grid grid-cols-12 gap-1 text-[10px] font-bold text-slate-400 bg-slate-50 p-1 text-center rounded"><div class="col-span-2 text-left">結局卡名</div><div class="col-span-1">權重</div><div class="col-span-3 text-left">事件敘述</div><div class="col-span-1">🔋</div><div class="col-span-1">❤️</div><div class="col-span-1">🪙</div><div class="col-span-3">操作</div></div>
                                     ${(b.cards||[]).length===0?'<div class="text-[10px] text-center text-slate-400 py-1">尚無卡片</div>':''}
-                                    ${(b.cards||[]).map((c, i) => `<div class="grid grid-cols-12 gap-1 text-[10px] items-center border-b pb-1 mt-1"><div class="col-span-2"><input value="${c.name||''}" onchange="commitAdmin(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].name=this.value;saveState()" class="border w-full p-1 rounded" placeholder="卡名"></div><div class="col-span-1"><input value="${c.w}" type="number" onchange="commitAdmin(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].w=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center"></div><div class="col-span-3"><input value="${c.text||''}" onchange="commitAdmin(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].text=this.value;saveState()" class="border w-full p-1 rounded" placeholder="敘述"></div><div class="col-span-1 text-emerald-600"><input value="${c.e}" type="number" onchange="commitAdmin(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].e=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div><div class="col-span-1 text-rose-600"><input value="${c.m}" type="number" onchange="commitAdmin(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].m=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div><div class="col-span-1 text-amber-600"><input value="${c.c}" type="number" onchange="commitAdmin(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].c=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div><div class="col-span-3 text-center flex justify-center"><button onclick="commitAdmin(); state.professions['${pName}'].r6Branches[bIdx].cards.splice(${i},1);saveState();syncAdmin()" class="bg-rose-100 text-rose-600 px-2 py-1 rounded font-bold text-[9px]">刪除</button></div></div>`).join('')}
+                                    ${(b.cards||[]).map((c, i) => `
+                                    <div class="grid grid-cols-12 gap-1 text-[10px] items-center border-b pb-1 mt-1">
+                                        <div class="col-span-2"><input value="${c.name||''}" onchange="commitAdmin(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].name=this.value;saveState()" class="border w-full p-1 rounded" placeholder="卡名"></div>
+                                        <div class="col-span-1"><input value="${c.w}" type="number" onchange="commitAdmin(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].w=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center"></div>
+                                        <div class="col-span-3"><input value="${c.text||''}" onchange="commitAdmin(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].text=this.value;saveState()" class="border w-full p-1 rounded" placeholder="敘述"></div>
+                                        <div class="col-span-1 text-emerald-600"><input value="${c.e}" type="number" onchange="commitAdmin(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].e=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div>
+                                        <div class="col-span-1 text-rose-600"><input value="${c.m}" type="number" onchange="commitAdmin(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].m=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div>
+                                        <div class="col-span-1 text-amber-600"><input value="${c.c}" type="number" onchange="commitAdmin(); state.professions['${pName}'].r6Branches[${bIdx}].cards[${i}].c=parseInt(this.value)||0;saveState()" class="border w-full p-1 rounded text-center font-bold"></div>
+                                        <div class="col-span-3 text-center flex justify-center space-x-0.5">
+                                            <button onclick="moveBranchCard('${pName}', ${bIdx}, ${i}, -1)" class="bg-slate-200 text-slate-600 px-1.5 py-1 rounded font-bold text-[9px] hover:bg-slate-300">⬆️</button>
+                                            <button onclick="moveBranchCard('${pName}', ${bIdx}, ${i}, 1)" class="bg-slate-200 text-slate-600 px-1.5 py-1 rounded font-bold text-[9px] hover:bg-slate-300">⬇️</button>
+                                            <button onclick="commitAdmin(); state.professions['${pName}'].r6Branches[${bIdx}].cards.splice(${i},1);saveState();syncAdmin()" class="bg-rose-100 text-rose-600 px-2 py-1 rounded font-bold text-[9px] hover:bg-rose-200">刪除</button>
+                                        </div>
+                                    </div>`).join('')}
                                 </div>
                             `).join('')}
                         </div>
