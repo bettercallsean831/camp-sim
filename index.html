@@ -11,6 +11,8 @@
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .hospitalized-mask { filter: grayscale(100%); opacity: 0.75; position: relative; pointer-events: none; }
+        .hospitalized-mask::after { content: "🏥 暫停行動一回合"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-10deg); background: rgba(220, 38, 38, 0.9); color: white; padding: 5px 15px; font-weight: 900; border-radius: 8px; border: 2px solid white; font-size: 1.2rem; white-space: nowrap; z-index: 10; }
         details > summary { list-style: none; outline: none; cursor: pointer; }
         details > summary::-webkit-details-marker { display: none; }
     </style>
@@ -27,49 +29,52 @@
         </div>
     </header>
 
-    <main class="flex-1 max-w-[1800px] w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-80px)] overflow-hidden">
+    <!-- 加入 lg:h-[calc(100vh-80px)] 讓小螢幕自然滾動，大螢幕固定高度 -->
+    <main class="flex-1 max-w-[1800px] w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:h-[calc(100vh-80px)] lg:overflow-hidden">
         
-        <!-- 左側：主看板 -->
-        <section class="lg:col-span-8 bg-slate-200/50 rounded-2xl shadow-inner border border-slate-300 p-4 flex flex-col h-full overflow-hidden relative">
-            <div class="flex justify-between items-end mb-4 border-b border-slate-300 pb-4 shrink-0">
+        <!-- 左側：主看板 (高度改為自動貼合內容 max-h-full self-start) -->
+        <section class="lg:col-span-8 bg-slate-200/50 rounded-2xl shadow-inner border border-slate-300 p-4 flex flex-col self-start max-h-full w-full">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-slate-300 pb-4 shrink-0 gap-4">
                 <div>
                     <span class="text-xs font-bold text-slate-500 uppercase tracking-widest bg-white px-2 py-1 rounded shadow-sm">🎯 遊戲進行中動作控制</span>
-                    <div class="flex items-center space-x-3 mt-1">
+                    <div class="flex items-center space-x-3 mt-2">
                         <button id="btn-play-undo" onclick="playUndo()" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition flex items-center">
                             <span class="mr-1">↩️</span> 遊戲復原
                         </button>
                         <button id="btn-play-redo" onclick="playRedo()" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition flex items-center">
                             遊戲重做 <span class="ml-1">↪️</span>
                         </button>
-                        <h2 id="big-timer-display" class="text-2xl font-black text-slate-900 ml-3">Round 1：載入中</h2>
+                        <h2 id="big-timer-display" class="text-xl md:text-2xl font-black text-slate-900 ml-2">Round 1：載入中</h2>
                     </div>
                 </div>
-                <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex items-center space-x-4">
+                <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex items-center space-x-4 w-full md:w-auto justify-between md:justify-end">
                     <div class="text-right">
                         <div class="text-[10px] text-slate-400 font-bold">討論決策倒數</div>
                         <div id="countdown-display" class="text-3xl font-black text-indigo-600 tabular-nums leading-none">03:00</div>
                     </div>
-                    <div class="flex flex-col space-y-1">
-                        <button onclick="timer.start()" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded">▶ 開始</button>
-                        <button onclick="timer.reset()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-1 rounded">🔄 重置</button>
+                    <div class="flex flex-col space-y-1 shrink-0">
+                        <button onclick="timer.start()" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded w-full">▶ 開始</button>
+                        <button onclick="timer.reset()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-1 rounded w-full">🔄 重置</button>
                     </div>
                 </div>
             </div>
 
-            <div id="leaderboard-grid" class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 content-start items-start custom-scrollbar pb-20"></div>
+            <!-- 隊伍陣列：內部加入捲動保護，但拿掉過多 padding -->
+            <div id="leaderboard-grid" class="overflow-y-auto min-h-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 content-start items-start custom-scrollbar mt-4 pr-1"></div>
             
-            <div class="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur border-t border-slate-300 p-4 flex justify-between items-center shadow-lg">
-                <button id="btn-batch-draw" onclick="executeBatchDraw()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-lg px-8 py-3 rounded-xl shadow-md transition transform hover:scale-105">
+            <!-- 底部動作按鈕：不再是絕對定位，而是緊貼隊伍陣列下方 -->
+            <div class="mt-4 bg-white border border-slate-300 p-4 flex flex-col sm:flex-row justify-between items-center shadow-md rounded-xl shrink-0 gap-3">
+                <button id="btn-batch-draw" onclick="executeBatchDraw()" class="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-lg px-8 py-3 rounded-xl shadow-md transition transform hover:scale-105">
                     🎲 全組集體命運抽卡
                 </button>
-                <button onclick="advanceRound()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-6 py-3 rounded-xl shadow transition text-sm">
+                <button onclick="advanceRound()" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-900 text-white font-bold px-6 py-3 rounded-xl shadow transition text-sm">
                     ✅ 結算並推進回合 ➡️
                 </button>
             </div>
         </section>
 
         <!-- 右側：設定與操作區 -->
-        <section class="lg:col-span-4 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full overflow-hidden">
+        <section class="lg:col-span-4 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[600px] lg:h-full overflow-hidden">
             <div class="flex space-x-1 p-2 bg-slate-100 border-b border-slate-200 shrink-0">
                 <button id="tab-play-btn" onclick="switchTab('play')" class="flex-1 py-2 rounded font-bold text-sm bg-white shadow text-indigo-700 transition">🎮 手動操作區</button>
                 <button id="tab-admin-btn" onclick="switchTab('admin')" class="flex-1 py-2 rounded font-bold text-sm text-slate-500 hover:text-slate-800 transition">⚙️ 後台設定</button>
@@ -202,13 +207,11 @@
         window.adminUndo = function() { if(adminPast.length === 0) return; adminFuture.push(JSON.stringify(state)); state = sanitizeState(JSON.parse(adminPast.pop())); saveState(); syncAdmin(); renderAll(); };
         window.adminRedo = function() { if(adminFuture.length === 0) return; adminPast.push(JSON.stringify(state)); state = sanitizeState(JSON.parse(adminFuture.pop())); saveState(); syncAdmin(); renderAll(); };
 
-        // 共用陣列移動函數
         window.moveArr = function(arr, idx, dir) {
             if(idx + dir < 0 || idx + dir >= arr.length) return false;
             let temp = arr[idx]; arr[idx] = arr[idx + dir]; arr[idx + dir] = temp;
             return true;
         };
-        // 專屬移動綁定函數 (與UI對應)
         window.moveTitle = function(i, d) { if(moveArr(state.config.titles, i, d)) { commitAdmin(); saveState(); syncAdmin(); renderAll(); } };
         window.moveTeam = function(i, d) { if(moveArr(state.teams, i, d)) { commitAdmin(); saveState(); syncAdmin(); renderAll(); } };
         window.moveAction = function(i, d) { if(moveArr(state.config.actions, i, d)) { commitAdmin(); saveState(); syncAdmin(); renderActionTab(); } };
@@ -295,9 +298,9 @@
             
             const btnDraw = document.getElementById('btn-batch-draw');
             if(state.hasDrawnThisRound) {
-                btnDraw.disabled = true; btnDraw.className = "bg-slate-400 text-slate-100 font-black text-lg px-8 py-3 rounded-xl shadow cursor-not-allowed"; btnDraw.innerHTML = "✅ 本回合已抽卡";
+                btnDraw.disabled = true; btnDraw.className = "w-full sm:w-auto bg-slate-400 text-slate-100 font-black text-lg px-8 py-3 rounded-xl shadow cursor-not-allowed"; btnDraw.innerHTML = "✅ 本回合已抽卡";
             } else {
-                btnDraw.disabled = false; btnDraw.className = "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-lg px-8 py-3 rounded-xl shadow-md transition transform hover:scale-105"; btnDraw.innerHTML = "🎲 全組集體命運抽卡";
+                btnDraw.disabled = false; btnDraw.className = "w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-lg px-8 py-3 rounded-xl shadow-md transition transform hover:scale-105"; btnDraw.innerHTML = "🎲 全組集體命運抽卡";
             }
             timer.updateStr(); renderLeaderboard(); renderActionTab();
         }
@@ -437,7 +440,7 @@
                     else { t.mind += 1; msg += `${subMsg}「零元低保」救濟：免費恢復 1 點心態。`; }
                     rescued = true;
                 }
-                if (rescued) { rescueMsgs.push(msg); t.energy = Math.min(15, t.energy); t.mind = Math.min(15, t.mind); }
+                if (rescued) { rescueMsgs.push(msg); t.energy = Math.min(15, Math.max(0, t.energy)); t.mind = Math.min(15, Math.max(0, t.mind)); }
                 t.actionHistory = []; 
             });
 
